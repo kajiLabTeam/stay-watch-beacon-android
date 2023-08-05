@@ -1,4 +1,4 @@
-package com.example.staywatchbeaconandroid.component
+package kajilab.togawa.staywatchbeaconandroid.component
 
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
