@@ -17,9 +17,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kajilab.togawa.staywatchbeaconandroid.ui.theme.StayWatchBeaconAndroidTheme
+import kajilab.togawa.staywatchbeaconandroid.viewModel.BeaconViewModel
 
 @Composable
 fun SignInView(modifier: Modifier = Modifier) {
+
+
     Column(
         modifier = Modifier
             .fillMaxSize(),
@@ -50,7 +53,9 @@ fun SignInView(modifier: Modifier = Modifier) {
                 )
             }
             Button(
-                onClick = { Log.d("Button", "Googleでサインイン！")},
+                onClick = {
+                    Log.d("Button", "Googleでサインイン！")
+                          },
                 colors = ButtonDefaults.buttonColors(Color(0xFFF8CC45))
             ) {
                 Text(

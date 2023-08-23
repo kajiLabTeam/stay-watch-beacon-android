@@ -1,5 +1,6 @@
 package kajilab.togawa.staywatchbeaconandroid.component
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -7,19 +8,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -27,19 +21,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.compositeOver
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kajilab.togawa.staywatchbeaconandroid.R
+import kajilab.togawa.staywatchbeaconandroid.model.BlePeripheralServerManager
 import kajilab.togawa.staywatchbeaconandroid.ui.theme.StayWatchBeaconAndroidTheme
+import kajilab.togawa.staywatchbeaconandroid.viewModel.BeaconViewModel
 
 @Composable
-fun BeaconView (modifier: Modifier = Modifier) {
-    //var communityName by remember { mutableStateOf("a")}
+fun BeaconView (viewModel: BeaconViewModel, peripheralServerManager: BlePeripheralServerManager) {
+
     val communityName = remember {
         mutableStateOf("梶研究室")
     }
@@ -115,6 +108,11 @@ fun BeaconView (modifier: Modifier = Modifier) {
                 panelColor = if(isAdvertising.value) Color(0xFF007AFF) else Color(0xFFFF3B30),
                 textColor = Color.White
             )
+
+            // お試し
+            //Text(beaconStatus)
+            //Text(viewModel.beaconStatus)
+
             // ユーザ名や同期ボタン、同期時刻
             Text(
                 text = userName.value,
@@ -132,10 +130,17 @@ fun BeaconView (modifier: Modifier = Modifier) {
 //                painter = rememberVectorPainter(image = Icons.Default.Star),
 //                contentDescription = null,
 //            )
-            Image(
-                painter = painterResource(R.drawable.forward_circle),
-                contentDescription = null,
-            )
+            Button(
+                onClick = {
+                    Log.d("Button", "同期")
+                    peripheralServerManager.clear()
+                }
+            ) {
+                Image(
+                    painter = painterResource(R.drawable.forward_circle),
+                    contentDescription = null,
+                )
+            }
             Text(
                 text = "最新の同期：" + latestSyncTime.value,
                 color = Color.Gray,
@@ -148,7 +153,11 @@ fun BeaconView (modifier: Modifier = Modifier) {
         // 発信開始停止ボタン
         if(isAdvertising.value){
             Button(
-                onClick = {Log.d("Button", "発信を停止")},
+                onClick = {
+                    Log.d("Button", "発信を停止")
+                    viewModel.stopBleAdvertising(peripheralServerManager)
+                    isAdvertising.value = false
+                          },
                 colors = ButtonDefaults.buttonColors(Color.Transparent)
             ) {
                 Text(
@@ -158,7 +167,12 @@ fun BeaconView (modifier: Modifier = Modifier) {
             }
         } else {
             Button(
-                onClick = {Log.d("Button", "発信を開始")},
+                onClick = {
+                    Log.d("Button", "発信を開始")
+                    //viewModel.updateStatus()
+                    viewModel.startBleAdvertising(peripheralServerManager)
+                    isAdvertising.value = true
+                          },
                 colors = ButtonDefaults.buttonColors(Color.Transparent)
             ) {
                 Text(
@@ -171,10 +185,10 @@ fun BeaconView (modifier: Modifier = Modifier) {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun BeaconPreview() {
-    StayWatchBeaconAndroidTheme {
-        BeaconView()
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun BeaconPreview() {
+//    StayWatchBeaconAndroidTheme {
+//        BeaconView()
+//    }
+//}
