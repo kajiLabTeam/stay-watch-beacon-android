@@ -32,6 +32,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.google.android.gms.auth.GoogleAuthUtil
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -44,6 +45,7 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import kajilab.togawa.staywatchbeaconandroid.component.BeaconView
+import kajilab.togawa.staywatchbeaconandroid.component.ProfileScreen
 import kajilab.togawa.staywatchbeaconandroid.component.SignInScreen
 import kajilab.togawa.staywatchbeaconandroid.model.BlePeripheralServerManager
 import kajilab.togawa.staywatchbeaconandroid.model.FirebaseAuthenticationModel
@@ -69,11 +71,19 @@ class MainActivity : ComponentActivity() {
     private lateinit var bleManager: BluetoothManager
 
     // firebase関連
-    private lateinit var googleSignInClient: GoogleSignInClient
-    //private lateinit var firebaseAuth: FirebaseAuth
-    private val RC_SIGN_IN = 9001
-    private val firebaseAuth: FirebaseAuth by lazy {
-        FirebaseAuth.getInstance()
+//    private lateinit var googleSignInClient: GoogleSignInClient
+//    //private lateinit var firebaseAuth: FirebaseAuth
+//    private val RC_SIGN_IN = 9001
+//    private val firebaseAuth: FirebaseAuth by lazy {
+//        FirebaseAuth.getInstance()
+//    }
+
+    // firebase関連例のYoutube
+    private val googleAuthUiClient by lazy {
+        FirebaseAuthenticationModel(
+            context = applicationContext,
+            oneTapClient = Identity.getSignInClient(applicationContext)
+        )
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -87,7 +97,7 @@ class MainActivity : ComponentActivity() {
             .build()
 
         // GoogleSignInClientの初期化
-        googleSignInClient = GoogleSignIn.getClient(this, gso)
+        //googleSignInClient = GoogleSignIn.getClient(this, gso)
 
 //        firebaseAuth = Firebase.auth
 
@@ -128,70 +138,138 @@ class MainActivity : ComponentActivity() {
                     //Greeting("Android")
                     //SignInView()
                     //BeaconView(viewModel, peripheralServiceManager, application)
-                    Button(onClick = { signIn() }) {
-                        Text("サインイン！")
+//                    Button(onClick = { signIn() }) {
+//                        Text("サインイン！")
+//                    }
+
+                    val navController = rememberNavController()
+                    NavHost(navController = navController, startDestination = "sign_in"){
+                        composable("sign_in") {
+                            val state by viewModel.state.collectAsStateWithLifecycle()
+
+                            LaunchedEffect(key1 = Unit) {
+                                if(googleAuthUiClient.getSignInUser() != null) {
+                                    navController.navigate("profile")
+                                }
+                            }
+
+                            val launcher = rememberLauncherForActivityResult(
+                                contract = ActivityResultContracts.StartIntentSenderForResult(),
+                                onResult = { result ->
+                                    if(result.resultCode == RESULT_OK) {
+                                        lifecycleScope.launch {
+                                            val signInResult = googleAuthUiClient.getSignWithIntent(
+                                                intent = result.data ?: return@launch
+                                            )
+                                            viewModel.onSignInResult(signInResult)
+                                        }
+                                    }
+
+                                }
+                            )
+
+                            LaunchedEffect(key1 = state.isSignInSuccessful) {
+                                if(state.isSignInSuccessful) {
+                                    Toast.makeText(
+                                        applicationContext,
+                                        "サインイン成功",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+
+                                    navController.navigate("profile")
+                                    viewModel.resetState()
+                                }
+                            }
+
+                            SignInScreen(
+                                state = state,
+                                onSignInClick = {
+                                    Log.d("MainActivity", "子ルーチンの外")
+                                    lifecycleScope.launch {
+                                        Log.d("MainActivity", "子ルーチンの中")
+                                        val signInIntentSender = googleAuthUiClient.signIn()
+                                        launcher.launch(
+                                            IntentSenderRequest.Builder(
+                                                signInIntentSender ?: return@launch
+                                            ).build()
+                                        )
+                                    }
+                                }
+                            )
+                        }
+                        composable("profile"){
+                            ProfileScreen(
+                                userData = googleAuthUiClient.getSignInUser(),
+                                onSignOut = {
+                                    lifecycleScope.launch {
+                                        googleAuthUiClient.signOut()
+                                        navController.popBackStack()
+                                    }
+                                }
+                            )
+                        }
                     }
                 }
             }
         }
     }
 
-    private fun signIn() {
-        Log.d("GoogleAuth", "signIn()開始")
-        val signInIntent = googleSignInClient.signInIntent
-        startActivityForResult(signInIntent, RC_SIGN_IN)
-        Log.d("GoogleAuth", "signIn()終了")
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        Log.d("GoogleAuth", "onActivityResult()開始")
-
-        // FirebaseAppの初期化
-        FirebaseApp.initializeApp(this)
-
-        Log.d("GoogleAuth", "FirebaseAppの初期化完了")
-
-        if (requestCode == RC_SIGN_IN) {
-            Log.d("GoogleAuth", "requestCodeおうけい")
-            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-            Log.d("GoogleAuth", "task=... 完了")
-            try {
-                Log.d("GoogleAuth", "tryのなか開始")
-                // Googleアカウントから認証情報を取得
-                val account = task.getResult(ApiException::class.java)
-
-                // ログイン処理のメソッドを呼ぶ
-                //firebaseAuthWithGoogle(account)
-
-                // FirebaseでGoogleログインを行う
-                Log.d("GoogleAuth", "FirebaseでGoogleログイン開始")
-                val credential = GoogleAuthProvider.getCredential(account.idToken, null)
-                Log.d("GoogleAuth", "Googleログイン2")
-                firebaseAuth.signInWithCredential(credential)
-                    .addOnCompleteListener(this) { authTask ->
-                        Log.d("GoogleAuth", "Googleログイン3")
-                        if (authTask.isSuccessful) {
-                            // ログイン成功
-                            val user = firebaseAuth.currentUser
-                            // ここでユーザー情報を利用できます
-                            Log.d("MainActivity", user.toString())
-
-                            Log.d("MainActivity", firebaseAuth.toString())
-                        } else {
-                            // ログイン失敗
-                            Log.d("MainActivity", "ログイン失敗")
-                        }
-                    }
-            } catch (e: Exception) {
-                // Googleログイン失敗
-                Log.d("GoogleAuth", "Googleログイン失敗")
-                println(e)
-                Log.d("error", e.toString())
-            }
-        }
-    }
+//    private fun signIn() {
+//        Log.d("GoogleAuth", "signIn()開始")
+//        val signInIntent = googleSignInClient.signInIntent
+//        startActivityForResult(signInIntent, RC_SIGN_IN)
+//        Log.d("GoogleAuth", "signIn()終了")
+//    }
+//
+//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+//        super.onActivityResult(requestCode, resultCode, data)
+//
+//        Log.d("GoogleAuth", "onActivityResult()開始")
+//
+//        // FirebaseAppの初期化
+//        FirebaseApp.initializeApp(this)
+//
+//        Log.d("GoogleAuth", "FirebaseAppの初期化完了")
+//
+//        if (requestCode == RC_SIGN_IN) {
+//            Log.d("GoogleAuth", "requestCodeおうけい")
+//            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+//            Log.d("GoogleAuth", "task=... 完了")
+//            try {
+//                Log.d("GoogleAuth", "tryのなか開始")
+//                // Googleアカウントから認証情報を取得
+//                val account = task.getResult(ApiException::class.java)
+//
+//                // ログイン処理のメソッドを呼ぶ
+//                //firebaseAuthWithGoogle(account)
+//
+//                // FirebaseでGoogleログインを行う
+//                Log.d("GoogleAuth", "FirebaseでGoogleログイン開始")
+//                val credential = GoogleAuthProvider.getCredential(account.idToken, null)
+//                Log.d("GoogleAuth", "Googleログイン2")
+//                firebaseAuth.signInWithCredential(credential)
+//                    .addOnCompleteListener(this) { authTask ->
+//                        Log.d("GoogleAuth", "Googleログイン3")
+//                        if (authTask.isSuccessful) {
+//                            // ログイン成功
+//                            val user = firebaseAuth.currentUser
+//                            // ここでユーザー情報を利用できます
+//                            Log.d("MainActivity", user.toString())
+//
+//                            Log.d("MainActivity", firebaseAuth.toString())
+//                        } else {
+//                            // ログイン失敗
+//                            Log.d("MainActivity", "ログイン失敗")
+//                        }
+//                    }
+//            } catch (e: Exception) {
+//                // Googleログイン失敗
+//                Log.d("GoogleAuth", "Googleログイン失敗")
+//                println(e)
+//                Log.d("error", e.toString())
+//            }
+//        }
+//    }
 }
 
 

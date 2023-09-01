@@ -21,11 +21,13 @@ class FirebaseAuthenticationModel(
     private val auth = Firebase.auth
 
     suspend fun signIn(): IntentSender? {
+        Log.d("FirebaseAuth", "signIn開始")
         val result = try {
             oneTapClient.beginSignIn(
                 buildSignInRequest()
             ).await()
         } catch (e: Exception) {
+            Log.d("error", "時間を開けて再度やり直してください")
             e.printStackTrace()
             if(e is CancellationException) throw e
             null

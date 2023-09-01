@@ -1,5 +1,6 @@
 package kajilab.togawa.staywatchbeaconandroid.component
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -36,8 +37,11 @@ fun SignInScreen(
             .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
-        Button(onClick = onSignInClick){
-            Text("サインアップ")
+        Button(onClick = {
+            onSignInClick()
+            Log.d("SignInScreen", "サインインボタンが押されたよ")
+        }){
+            Text("サインイン")
         }
     }
 

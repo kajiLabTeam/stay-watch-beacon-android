@@ -41,6 +41,19 @@ class BeaconViewModel(): ViewModel() {
     var isAdvertising = MutableLiveData(false)
 
     // firebaseAuth関連
+    private val _state = MutableStateFlow(SignInState())
+    val state = _state.asStateFlow()
+
+    fun onSignInResult(result: SignInResult) {
+        _state.update {it.copy(
+            isSignInSuccessful = result.data != null,
+            signInError = result.errorMessage
+        )}
+    }
+
+    fun resetState() {
+        _state.update { SignInState() }
+    }
 
 
     fun testUser(){
