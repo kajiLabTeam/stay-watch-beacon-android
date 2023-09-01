@@ -1,6 +1,7 @@
 package kajilab.togawa.staywatchbeaconandroid.component
 
 import android.content.Context
+import android.content.Intent
 import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -29,9 +30,11 @@ import kajilab.togawa.staywatchbeaconandroid.R
 import kajilab.togawa.staywatchbeaconandroid.model.BlePeripheralServerManager
 import kajilab.togawa.staywatchbeaconandroid.ui.theme.StayWatchBeaconAndroidTheme
 import kajilab.togawa.staywatchbeaconandroid.viewModel.BeaconViewModel
+import kajilab.togawa.staywatchbeaconandroid.service.BlePeripheralService
+import java.util.UUID
 
 @Composable
-fun BeaconView (viewModel: BeaconViewModel, peripheralServerManager: BlePeripheralServerManager) {
+fun BeaconView (viewModel: BeaconViewModel, peripheralServerManager: BlePeripheralServerManager, application: Context) {
 
     val communityName = remember {
         mutableStateOf("梶研究室")
@@ -72,7 +75,9 @@ fun BeaconView (viewModel: BeaconViewModel, peripheralServerManager: BlePeripher
                 horizontalAlignment = Alignment.CenterHorizontally
             ){
                 Button(
-                    onClick = { Log.d("Button", "別Googleでサインイン！")},
+                    onClick = {
+                        Log.d("Button", "別Googleでサインイン！")
+                              },
                     colors = ButtonDefaults.buttonColors(Color.Transparent),
                     border = BorderStroke(3.dp, Color(0xFFF8CC45))
                 ) {
@@ -94,6 +99,11 @@ fun BeaconView (viewModel: BeaconViewModel, peripheralServerManager: BlePeripher
                 .padding(top = 5.dp)
                 .padding(bottom = 10.dp)
             )
+
+        // 下のエリア
+//        Button(onClick = {
+//        }) {
+//        }
 
         Column (
             modifier = Modifier
@@ -133,7 +143,8 @@ fun BeaconView (viewModel: BeaconViewModel, peripheralServerManager: BlePeripher
             Button(
                 onClick = {
                     Log.d("Button", "同期")
-                    peripheralServerManager.clear()
+                    //peripheralServerManager.clear()
+                    viewModel.startPeripheralService(application)
                 }
             ) {
                 Image(
@@ -180,6 +191,23 @@ fun BeaconView (viewModel: BeaconViewModel, peripheralServerManager: BlePeripher
                     color = Color.Gray
                 )
             }
+        }
+
+        Button(
+            onClick = {
+                Log.d("debug", "API取得テストボタン")
+                viewModel.testUser()
+            }
+        ) {
+            Text("APIテスト")
+        }
+
+        Button(
+            onClick = {
+                Log.d("debug", "Googleサインインテストボタン")
+            }
+        ) {
+            Text("APIテスト")
         }
 
     }
