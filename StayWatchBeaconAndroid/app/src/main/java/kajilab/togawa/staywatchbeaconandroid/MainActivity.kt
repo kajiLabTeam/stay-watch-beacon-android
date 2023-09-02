@@ -7,52 +7,24 @@ import android.bluetooth.BluetoothGattServer
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.BluetoothLeAdvertiser
 import android.content.Context
-import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
-import androidx.activity.result.IntentSenderRequest
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import com.google.android.gms.auth.GoogleAuthUtil
 import com.google.android.gms.auth.api.identity.Identity
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.api.ApiException
-import com.google.firebase.FirebaseApp
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
-import kajilab.togawa.staywatchbeaconandroid.component.BeaconView
-import kajilab.togawa.staywatchbeaconandroid.component.ProfileScreen
-import kajilab.togawa.staywatchbeaconandroid.component.SignInScreen
+import kajilab.togawa.staywatchbeaconandroid.component.SignInView
 import kajilab.togawa.staywatchbeaconandroid.model.BlePeripheralServerManager
-import kajilab.togawa.staywatchbeaconandroid.model.FirebaseAuthenticationModel
+import kajilab.togawa.staywatchbeaconandroid.api.GoogleAuthUiClient
 import kajilab.togawa.staywatchbeaconandroid.ui.theme.StayWatchBeaconAndroidTheme
 import kajilab.togawa.staywatchbeaconandroid.viewModel.BeaconViewModel
-import kajilab.togawa.staywatchbeaconandroid.viewModel.SignInViewModel
-import kotlinx.coroutines.launch
 import pub.devrel.easypermissions.EasyPermissions
 
 
@@ -80,7 +52,7 @@ class MainActivity : ComponentActivity() {
 
     // firebase関連例のYoutube
     private val googleAuthUiClient by lazy {
-        FirebaseAuthenticationModel(
+        GoogleAuthUiClient(
             context = applicationContext,
             oneTapClient = Identity.getSignInClient(applicationContext)
         )
@@ -136,79 +108,11 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     //Greeting("Android")
-                    //SignInView()
+                    SignInView(viewModel, googleAuthUiClient)
                     //BeaconView(viewModel, peripheralServiceManager, application)
 //                    Button(onClick = { signIn() }) {
 //                        Text("サインイン！")
 //                    }
-
-                    val navController = rememberNavController()
-                    NavHost(navController = navController, startDestination = "sign_in"){
-                        composable("sign_in") {
-                            val state by viewModel.state.collectAsStateWithLifecycle()
-
-                            LaunchedEffect(key1 = Unit) {
-                                if(googleAuthUiClient.getSignInUser() != null) {
-                                    navController.navigate("profile")
-                                }
-                            }
-
-                            val launcher = rememberLauncherForActivityResult(
-                                contract = ActivityResultContracts.StartIntentSenderForResult(),
-                                onResult = { result ->
-                                    if(result.resultCode == RESULT_OK) {
-                                        lifecycleScope.launch {
-                                            val signInResult = googleAuthUiClient.getSignWithIntent(
-                                                intent = result.data ?: return@launch
-                                            )
-                                            viewModel.onSignInResult(signInResult)
-                                        }
-                                    }
-
-                                }
-                            )
-
-                            LaunchedEffect(key1 = state.isSignInSuccessful) {
-                                if(state.isSignInSuccessful) {
-                                    Toast.makeText(
-                                        applicationContext,
-                                        "サインイン成功",
-                                        Toast.LENGTH_LONG
-                                    ).show()
-
-                                    navController.navigate("profile")
-                                    viewModel.resetState()
-                                }
-                            }
-
-                            SignInScreen(
-                                state = state,
-                                onSignInClick = {
-                                    Log.d("MainActivity", "子ルーチンの外")
-                                    lifecycleScope.launch {
-                                        Log.d("MainActivity", "子ルーチンの中")
-                                        val signInIntentSender = googleAuthUiClient.signIn()
-                                        launcher.launch(
-                                            IntentSenderRequest.Builder(
-                                                signInIntentSender ?: return@launch
-                                            ).build()
-                                        )
-                                    }
-                                }
-                            )
-                        }
-                        composable("profile"){
-                            ProfileScreen(
-                                userData = googleAuthUiClient.getSignInUser(),
-                                onSignOut = {
-                                    lifecycleScope.launch {
-                                        googleAuthUiClient.signOut()
-                                        navController.popBackStack()
-                                    }
-                                }
-                            )
-                        }
-                    }
                 }
             }
         }

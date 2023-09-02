@@ -207,7 +207,7 @@ fun BeaconView (viewModel: BeaconViewModel, peripheralServerManager: BlePeripher
                 Log.d("debug", "Googleサインインテストボタン")
             }
         ) {
-            Text("APIテスト")
+            Text("Googleサインインテスト")
         }
 
     }
