@@ -67,7 +67,7 @@ fun BeaconView (viewModel: BeaconViewModel, peripheralServerManager: BlePeripher
             horizontalArrangement = Arrangement.SpaceBetween
         ){
             Text(
-                text = communityName.value,
+                text = viewModel.communityName,
                 fontWeight = FontWeight.Bold,
                 fontSize = 20.sp
             )
@@ -88,7 +88,7 @@ fun BeaconView (viewModel: BeaconViewModel, peripheralServerManager: BlePeripher
                     )
                 }
                 Text(
-                    text="ait.kajilab@gmail.com",
+                    text= if(viewModel.email == null) "error@gmail.com" else viewModel.email!!,
                     fontSize = 12.sp
                 )
             }
@@ -125,13 +125,13 @@ fun BeaconView (viewModel: BeaconViewModel, peripheralServerManager: BlePeripher
 
             // ユーザ名や同期ボタン、同期時刻
             Text(
-                text = userName.value,
+                text = viewModel.userName,
                 fontSize = 20.sp,
                 modifier = Modifier
                     .padding(bottom = 15.dp)
             )
             Text(
-                text = uuid.value,
+                text = viewModel.uuid,
                 fontSize = 12.sp,
                 modifier = Modifier
                     .padding(bottom = 25.dp)
@@ -153,7 +153,7 @@ fun BeaconView (viewModel: BeaconViewModel, peripheralServerManager: BlePeripher
                 )
             }
             Text(
-                text = "最新の同期：" + latestSyncTime.value,
+                text = "最新の同期：" + viewModel.latestSyncTime,
                 color = Color.Gray,
                 fontSize = 12.sp,
                 modifier = Modifier
@@ -192,24 +192,6 @@ fun BeaconView (viewModel: BeaconViewModel, peripheralServerManager: BlePeripher
                 )
             }
         }
-
-        Button(
-            onClick = {
-                Log.d("debug", "API取得テストボタン")
-                viewModel.testUser()
-            }
-        ) {
-            Text("APIテスト")
-        }
-
-        Button(
-            onClick = {
-                Log.d("debug", "Googleサインインテストボタン")
-            }
-        ) {
-            Text("Googleサインインテスト")
-        }
-
     }
 }
 

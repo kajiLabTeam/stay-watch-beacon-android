@@ -3,6 +3,7 @@ package kajilab.togawa.staywatchbeaconandroid.viewModel
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -20,6 +21,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.util.Date
 import java.util.UUID
 
 class BeaconViewModel(): ViewModel() {
@@ -28,7 +32,11 @@ class BeaconViewModel(): ViewModel() {
     var beaconStatus:String by mutableStateOf("停止中")
     var isAdvertising = MutableLiveData(false)
 
-    val
+    var userName by mutableStateOf("")
+    var uuid by mutableStateOf("")
+    var email: String? by mutableStateOf(null)
+    var communityName by mutableStateOf("")
+    var latestSyncTime by mutableStateOf("")
 
     // firebaseAuth関連
     private val _state = MutableStateFlow(SignInState())
@@ -46,11 +54,11 @@ class BeaconViewModel(): ViewModel() {
         _state.update { SignInState() }
     }
 
-    suspend fun storeUserAndToken(email:String, token:String){
+    suspend fun storeUserAndToken(gmail:String, token:String){
 
 
         Log.d("ViewModel", "トークンとメールアドレス保存するぞう")
-        Log.d("ViewModel", email)
+        Log.d("ViewModel", gmail)
         Log.d("ViewModel", token)
 
         // トークンを保存
@@ -61,8 +69,24 @@ class BeaconViewModel(): ViewModel() {
         val user = stayWatchClient.getUserFromServer(token)
         //val user = stayWatchClient.getUserFromServerWithOkHttp(token)
         Log.d("ViewModel", "ユーザ情報：" + user.data?.userName)
-
+        if(user.errorMessage != null){
+            print(user.errorMessage)
+            return
+        }
         // ユーザ情報をデータベースへ保存
+
+
+        // UI部分の変更を反映
+        // emailはgoogleClientからのを使用
+        email = gmail
+        // 現在時刻を取得
+        val formatter = SimpleDateFormat("yyyy-M-d H:mm")
+        latestSyncTime = formatter.format(Date())
+        if(user.data != null){
+            userName = user.data.userName
+            uuid = user.data.uuid
+            communityName = user.data.communityName
+        }
 
         // ペリフェラルサービスを開始
     }

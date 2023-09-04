@@ -50,24 +50,11 @@ fun SignInView(viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient)
             }
             SignInButton(googleAuthUiClient = googleAuthClient, viewModel = viewModel)
 
-            Button(
-                onClick = {viewModel.testUser()}
-            ){
-                Text(
-                    text = "滞在ウォッチとのテスト"
-                )
-            }
 //            Button(
-//                onClick = {
-//                    Log.d("Button", "Googleでサインイン！")
-//                    viewModel.signInGoogle(googleAuthClient)
-//                          },
-//                colors = ButtonDefaults.buttonColors(Color(0xFFF8CC45))
-//            ) {
+//                onClick = {viewModel.testUser()}
+//            ){
 //                Text(
-//                    text = "Googleアカウントでサインイン",
-//                    color = Color.Black,
-//                    fontSize = 20.sp
+//                    text = "滞在ウォッチとのテスト"
 //                )
 //            }
         }

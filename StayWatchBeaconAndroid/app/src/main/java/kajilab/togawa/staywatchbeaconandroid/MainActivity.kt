@@ -24,6 +24,7 @@ import com.google.firebase.auth.FirebaseAuth
 import kajilab.togawa.staywatchbeaconandroid.component.SignInView
 import kajilab.togawa.staywatchbeaconandroid.model.BlePeripheralServerManager
 import kajilab.togawa.staywatchbeaconandroid.api.GoogleAuthUiClient
+import kajilab.togawa.staywatchbeaconandroid.component.BeaconView
 import kajilab.togawa.staywatchbeaconandroid.ui.theme.StayWatchBeaconAndroidTheme
 import kajilab.togawa.staywatchbeaconandroid.viewModel.BeaconViewModel
 import pub.devrel.easypermissions.EasyPermissions
@@ -110,7 +111,11 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     //Greeting("Android")
-                    SignInView(viewModel, googleAuthUiClient)
+                    if(viewModel.email == null){
+                        SignInView(viewModel, googleAuthUiClient)
+                    }else{
+                        BeaconView(viewModel, peripheralServiceManager, application)
+                    }
                     //BeaconView(viewModel, peripheralServiceManager, application)
 //                    Button(onClick = { signIn() }) {
 //                        Text("サインイン！")
