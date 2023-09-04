@@ -20,6 +20,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.firebase.auth.FirebaseAuth
 import kajilab.togawa.staywatchbeaconandroid.component.SignInView
 import kajilab.togawa.staywatchbeaconandroid.model.BlePeripheralServerManager
 import kajilab.togawa.staywatchbeaconandroid.api.GoogleAuthUiClient
@@ -49,6 +50,7 @@ class MainActivity : ComponentActivity() {
 //    private val firebaseAuth: FirebaseAuth by lazy {
 //        FirebaseAuth.getInstance()
 //    }
+    //private var firebaseAuth: FirebaseAuth? = null
 
     // firebase関連例のYoutube
     private val googleAuthUiClient by lazy {

@@ -28,6 +28,8 @@ class BeaconViewModel(): ViewModel() {
     var beaconStatus:String by mutableStateOf("停止中")
     var isAdvertising = MutableLiveData(false)
 
+    val
+
     // firebaseAuth関連
     private val _state = MutableStateFlow(SignInState())
     val state = _state.asStateFlow()
@@ -54,7 +56,7 @@ class BeaconViewModel(): ViewModel() {
         // トークンを保存
 
         // トークン使って滞在ウォッチサーバからユーザ情報取得
-        Log.d("ViewModel", "トークンを使って滞在ウォッチサーバからユーザ取得するぞう")
+        Log.d("ViewModel", "GoogleIDトークンを使って滞在ウォッチサーバからユーザ取得するぞう")
         val stayWatchClient = StayWatchClient()
         val user = stayWatchClient.getUserFromServer(token)
         //val user = stayWatchClient.getUserFromServerWithOkHttp(token)
