@@ -56,8 +56,9 @@ class BeaconViewModel(): ViewModel() {
         // トークン使って滞在ウォッチサーバからユーザ情報取得
         Log.d("ViewModel", "トークンを使って滞在ウォッチサーバからユーザ取得するぞう")
         val stayWatchClient = StayWatchClient()
-        val user = stayWatchClient.getUserFromServer()
-        Log.d("ViewModel", "ユーザ情報：" + user.toString())
+        val user = stayWatchClient.getUserFromServer(token)
+        //val user = stayWatchClient.getUserFromServerWithOkHttp(token)
+        Log.d("ViewModel", "ユーザ情報：" + user.data?.userName)
 
         // ユーザ情報をデータベースへ保存
 
@@ -68,6 +69,11 @@ class BeaconViewModel(): ViewModel() {
     fun testUser(){
         Log.d("ViewModel", "testUserが実行開始")
         CoroutineScope(Dispatchers.IO).launch {
+            Log.d("ViewModel", "トークンを使って滞在ウォッチサーバからユーザ取得するぞう")
+            val stayWatchClient = StayWatchClient()
+            val user = stayWatchClient.getUserFromServer("testtokne")
+            Log.d("ViewModel", "ユーザ情報：" + user.data?.userName)
+            Log.d("ViewModel", "Errorメッセージ：" + user.errorMessage)
         }
         Log.d("ViewModel", "testUserが実行終了")
     }

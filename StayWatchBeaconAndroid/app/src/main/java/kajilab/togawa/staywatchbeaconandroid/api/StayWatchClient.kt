@@ -2,32 +2,90 @@ package kajilab.togawa.staywatchbeaconandroid.api
 
 import android.util.JsonToken
 import android.util.Log
+import com.github.kittinunf.fuel.core.Headers
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.fuel.json.responseJson
 import com.github.kittinunf.result.Result
 import com.google.gson.Gson
+import kajilab.togawa.staywatchbeaconandroid.model.StayWatchServerResult
+import kajilab.togawa.staywatchbeaconandroid.model.StayWatchUser
 import kajilab.togawa.staywatchbeaconandroid.model.User
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.IOException
 
 data class UserDetail(val name: String, val stand: String)
 
 class StayWatchClient {
-    private val url = "https://apppppp.com/jojo.json"
-    //private val url = "https://go-staywatch.kajilab.tk/api/v1/check"
+    //private val url = "https://apppppp.com/jojo.json"
+    private val url = "https://go-staywatch.kajilab.tk/api/v1/check"
+    //private val url = "http://192.168.101.11:8082/api/v1/stayers"
 
-    private val headers = hashMapOf(
-        "Authorization" to "Bearer TOKEN"
-    )
-    private val headeras = listOf(
-        Pair("Authorization", "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6ImIyZGZmNzhhMGJkZDVhMDIyMTIwNjM0OTlkNzdlZjRkZWVkMWY2NWIiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoi5oSb55-l5bel5qWt5aSn5a2m5qK256CU56m25a6kIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FFZEZUcDRrZW1FOUlLM1JweEIwRHRnOGJJazFzbGZhQXBuRGh5aFVUaGU2PXM5Ni1jIiwiaXNzIjoiaHR0cHM6Ly9zZWN1cmV0b2tlbi5nb29nbGUuY29tL3N0YXktd2F0Y2gtYTYxNmYiLCJhdWQiOiJzdGF5LXdhdGNoLWE2MTZmIiwiYXV0aF90aW1lIjoxNjkwNDI3NDczLCJ1c2VyX2lkIjoiSk96bEFIRXU2ZWd6aUlXY1J3MElNYnllT1RvMSIsInN1YiI6IkpPemxBSEV1NmVnemlJV2NSdzBJTWJ5ZU9UbzEiLCJpYXQiOjE2OTA0Mjc0NzQsImV4cCI6MTY5MDQzMTA3NCwiZW1haWwiOiJhaXQua2FqaWxhYkBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiZmlyZWJhc2UiOnsiaWRlbnRpdGllcyI6eyJnb29nbGUuY29tIjpbIjEwNDg1ODgyMDQ5NTMxMTkzMDU3MiJdLCJlbWFpbCI6WyJhaXQua2FqaWxhYkBnbWFpbC5jb20iXX0sInNpZ25faW5fcHJvdmlkZXIiOiJnb29nbGUuY29tIn19.f1sXnOXmBxRFF8WiDOKAJJyU3byINpeaA2_gmz8mSCrGG2h-OPGq3GeMbKs5BKQYHyzJXVaUGSk_Xgl2p7ua7eXzY68C6SiUpbLZEvndURgPu3o-dTSxIqmrOlkq72ynb3J9Ow8c9rSaw4YqeeAxJ2w-5f0btAE0OQzFFUz_o3K-dJv90Z0V2YFTHHs__gEytz5-sVJR5D8rsU4DQa1niY5w2AIprOHdGdfZn2XK0mI7peI0ny-atISShL1QCstUOj2JYxkB5VMuj0_wx9hiR3SRvTu9MR_pBFby8uT-cfHvRF1nI6lszQ8vKrtC5_eRTQ_5H-xxxPeJXEMBGH4XhA")
-    )
+//    private val headers = hashMapOf(
+//        "Authorization" to "Bearer TOKEN"
+//    )
+//    private val headeras = listOf(
+//        Pair("Authorization", "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6ImM3ZTExNDEwNTlhMTliMjE4MjA5YmM1YWY3YTgxYTcyMGUzOWI1MDAiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI3NjgzMDYwMDQ2MDYtY2llMWNucW5vaG9hcWY3ZWc5dmIzM3AyZDAydDdidjguYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI3NjgzMDYwMDQ2MDYtNDdqNGlnMWExaXVxMGpsamU2Y3VkZW81aTduaWhsbmEuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDQ4NTg4MjA0OTUzMTE5MzA1NzIiLCJlbWFpbCI6ImFpdC5rYWppbGFiQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJuYW1lIjoi5oSb55-l5bel5qWt5aSn5a2m5qK256CU56m25a6kIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FBY0hUdGVDVU9NQnREN1FHcnZUUjE1RDhtQUxHa2RjVkluV0ZadG9BRWozTUJOcT1zOTYtYyIsImdpdmVuX25hbWUiOiLmorbnoJTnqbblrqQiLCJmYW1pbHlfbmFtZSI6IuaEm-efpeW3pealreWkp-WtpiIsImxvY2FsZSI6ImphIiwiaWF0IjoxNjkzNzUyODEyLCJleHAiOjE2OTM3NTY0MTJ9.CvaZF8Bw2_dJOfjrpPClsyE5xKZAKdWLhJoeIno7tDr6EuopDt69a5M75OFFUciomfJzRUtX3pyaB49UrN57K8U_YWE3p3TodEa3FDH6BTQdmWGGQzn8BxO7Xeh8xTPGRG_9c8yJfArxXyRG1i3EQ_r5UJUJ_B2RDrz_T2paU-9a9lnm6QfQdQMYVomQlNQdli1fm7-JcdulcmiMd9minIdTl7Hs_N6mKqh0l4qGtulQb1WlySvg63EzEDrPxGfJi5E8VsbuwcA7XUQZviaheY2Vzl1jgcJKLXxeDAfTpNW8Ew35YgL6X7U3UxOZwtMNLak9K1EMq6Kry5-KU6aoSw")
+//    )
 
-    fun getUserFromServer(): String {
-        val (request, response, result) = url.httpGet().responseString()
-        //val (request, response, result) = url.httpGet(headeras).responseString()
+    fun getUserFromServerWithOkHttp(token: String): StayWatchServerResult {
+        val client = OkHttpClient().newBuilder()
+            .build()
+        var urlStr = "https://go-staywatch.kajilab.tk/api/v1/check"
+
+
+        val request = Request.Builder()
+            .url(urlStr)
+            //.addHeader("Authorization", "Bearer $token")
+            .build()
+
+        Log.d("StayWatchClient", "リクエスト内容：$request")
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onResponse(call: Call, response: Response) {
+                // Responseの読み出し
+                val responseBody = response.body?.string().orEmpty()
+                // 必要に応じてCallback
+                Log.d("ビーコン情報",responseBody)
+                StayWatchServerResult(
+                    data = null,
+                    errorMessage = null
+                )
+            }
+            override fun onFailure(call: Call, e: IOException) {
+                Log.e("Error", e.toString())
+                // 必要に応じてCallback
+                StayWatchServerResult(
+                    data = null,
+                    errorMessage = e.message.toString()
+                )
+            }
+        })
+        return StayWatchServerResult(
+            data = null,
+            errorMessage = null
+        )
+    }
+
+
+    fun getUserFromServer(token: String): StayWatchServerResult {
+//        val headers = listOf(
+//            Pair("Authorization", "Bearer $token")
+//        )
+        val (request, response, result) = url.httpGet()
+            .header(Headers.AUTHORIZATION to "Bearer $token")
+            .responseString()
+        //val (request, response, result) = url.httpGet(headers).responseString()
+        //val (request, response, result) = url.httpGet(listOf(Pair("Authorization", "Bearer$token"))).responseString()
+        Log.d("StayWatchClient", "リクエスト：$request")
+        Log.d("StayWatchClient", "レスポンス：$response")
 
         return when (result) {
             is Result.Failure -> {
@@ -37,6 +95,10 @@ class StayWatchClient {
                 val resultUser = User("miss","missstand")
                 resultUser.toString()  // 返り値
 //                ex.toString()   // 返り値
+                StayWatchServerResult(
+                    data = null,
+                    errorMessage = ex.message.toString()
+                )
 
             }
 
@@ -46,7 +108,15 @@ class StayWatchClient {
                 println(resultJson)
                 //val resultUser = Gson().fromJson(resultJson, User::class.java)
                 //val resultUser = User("kota","ruirui")
-                resultJson  // 返り値
+
+                StayWatchServerResult(
+                    data = StayWatchUser(
+                        userName = resultJson,
+                        uuid = "ajifioaiefa",
+                        communityName = "戸川家"
+                    ),
+                    errorMessage = null
+                )
             }
         }
     }

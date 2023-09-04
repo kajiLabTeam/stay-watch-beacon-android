@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'com.google.gms.google-services' // FirebaseAuthentication関連
 }
 
 android {
@@ -74,6 +75,8 @@ dependencies {
     implementation "com.github.kittinunf.fuel:fuel-android:2.3.1"
     implementation "com.github.kittinunf.fuel:fuel-json:2.3.1"
 
+    implementation 'com.squareup.okhttp3:okhttp:4.9.0'
+
     // Jsonを変換する関連
     implementation 'com.google.code.gson:gson:2.8.6'
 
@@ -83,7 +86,7 @@ dependencies {
     implementation 'no.nordicsemi.android:ble:2.6.1'
 
     // Firebase関連
-    //implementation(platform("com.google.firebase:firebase-bom:32.2.3"))
+    implementation(platform("com.google.firebase:firebase-bom:32.1.0"))
     implementation("com.google.firebase:firebase-auth-ktx:21.1.0")
     implementation("com.google.android.gms:play-services-auth:20.4.1")
 
