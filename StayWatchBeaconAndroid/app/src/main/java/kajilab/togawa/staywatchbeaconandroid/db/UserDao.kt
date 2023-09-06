@@ -21,7 +21,10 @@ interface UserDao {
     fun getUserByName(userName: String): DBUser
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun createUser(vararg users: DBUser)
+    fun createUser(vararg user: DBUser)
+
+    @Query("DELETE FROM dbuser WHERE id = :id")
+    fun deleteUserById(id: Int)
 
     @Delete
     fun deleteUser(user: DBUser)

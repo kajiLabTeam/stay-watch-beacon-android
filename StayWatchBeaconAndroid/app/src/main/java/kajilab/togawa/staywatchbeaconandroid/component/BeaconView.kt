@@ -32,6 +32,9 @@ import kajilab.togawa.staywatchbeaconandroid.model.BlePeripheralServerManager
 import kajilab.togawa.staywatchbeaconandroid.ui.theme.StayWatchBeaconAndroidTheme
 import kajilab.togawa.staywatchbeaconandroid.viewModel.BeaconViewModel
 import kajilab.togawa.staywatchbeaconandroid.service.BlePeripheralService
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.UUID
 
 @Composable
@@ -77,14 +80,16 @@ fun BeaconView (viewModel: BeaconViewModel, peripheralServerManager: BlePeripher
             ){
                 Button(
                     onClick = {
-                        Log.d("Button", "別Googleでサインイン！")
-                        viewModel.email = null
+                        Log.d("Button", "サインアウト！")
+                        CoroutineScope(Dispatchers.IO).launch {
+                            viewModel.signOut(db)
+                        }
                               },
                     colors = ButtonDefaults.buttonColors(Color.Transparent),
                     border = BorderStroke(3.dp, Color(0xFFF8CC45))
                 ) {
                     Text(
-                        text="別アカウントでサインイン",
+                        text="サインアウト",
                         fontSize = 12.sp,
                         color = Color.Black
                     )

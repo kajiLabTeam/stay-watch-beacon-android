@@ -59,8 +59,6 @@ class BeaconViewModel(): ViewModel() {
 
     suspend fun storeUserAndToken(gmail:String, token:String, db:AppDatabase){
         val dao = db.userDao()
-        // 現在時刻を取得
-
 
         Log.d("ViewModel", "トークンとメールアドレス保存するぞう")
         Log.d("ViewModel", gmail)
@@ -92,7 +90,7 @@ class BeaconViewModel(): ViewModel() {
             return
         }
 
-        // ユーザ情報をデータベースへ保存
+        // ユーザ情報をデータベースへ保存(ユーザは一人であるためidは1固定)
         dao.createUser(DBUser(
             id = 1,
             name = user.data?.userName,
@@ -115,6 +113,25 @@ class BeaconViewModel(): ViewModel() {
         }
 
         // ペリフェラルサービスを開始
+    }
+
+    suspend fun signOut(db:AppDatabase){
+        val dao = db.userDao()
+
+        // データベースからユーザ情報の削除
+        dao.deleteUserById(1)
+
+        // UI部分の変更を反映
+        email = null
+        userName = ""
+        uuid = ""
+        communityName = ""
+        latestSyncTime = ""
+
+
+        // ペリフェラルサービスを停止
+
+        // 保存されているトークンを削除
     }
 
 
