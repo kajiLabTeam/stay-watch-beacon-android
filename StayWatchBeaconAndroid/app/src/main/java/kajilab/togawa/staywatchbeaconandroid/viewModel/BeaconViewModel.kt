@@ -10,7 +10,10 @@ import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat.startForegroundService
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.room.Room
 import kajilab.togawa.staywatchbeaconandroid.api.StayWatchClient
+import kajilab.togawa.staywatchbeaconandroid.db.AppDatabase
+import kajilab.togawa.staywatchbeaconandroid.db.DBUser
 import kajilab.togawa.staywatchbeaconandroid.model.BlePeripheralServerManager
 import kajilab.togawa.staywatchbeaconandroid.model.SignInResult
 import kajilab.togawa.staywatchbeaconandroid.service.BlePeripheralService
@@ -54,7 +57,9 @@ class BeaconViewModel(): ViewModel() {
         _state.update { SignInState() }
     }
 
-    suspend fun storeUserAndToken(gmail:String, token:String){
+    suspend fun storeUserAndToken(gmail:String, token:String, db:AppDatabase){
+        val dao = db.userDao()
+        // 現在時刻を取得
 
 
         Log.d("ViewModel", "トークンとメールアドレス保存するぞう")
@@ -69,19 +74,40 @@ class BeaconViewModel(): ViewModel() {
         val user = stayWatchClient.getUserFromServer(token)
         //val user = stayWatchClient.getUserFromServerWithOkHttp(token)
         Log.d("ViewModel", "ユーザ情報：" + user.data?.userName)
+
+        // 現在時刻の取得
+        val formatter = SimpleDateFormat("yyyy-M-d H:mm")
+        latestSyncTime = formatter.format(Date())
         if(user.errorMessage != null){
+            // ユーザの取得が失敗したらメールアドレスと同期時刻だけデータベースへ保存しておしまい
+            dao.createUser(DBUser(
+                id = 1,
+                name = null,
+                uuid = null,
+                email = gmail,
+                communityName = null,
+                latestSyncTime = latestSyncTime
+            ))
             print(user.errorMessage)
             return
         }
-        // ユーザ情報をデータベースへ保存
 
+        // ユーザ情報をデータベースへ保存
+        dao.createUser(DBUser(
+            id = 1,
+            name = user.data?.userName,
+            uuid = user.data?.uuid,
+            email = gmail,
+            communityName = user.data?.communityName,
+            latestSyncTime = latestSyncTime
+        ))
+
+//        val dbUser = dao.getUserById(1)
+//        Log.d("ViewModel", "DBの内容: $dbUser")
 
         // UI部分の変更を反映
         // emailはgoogleClientからのを使用
         email = gmail
-        // 現在時刻を取得
-        val formatter = SimpleDateFormat("yyyy-M-d H:mm")
-        latestSyncTime = formatter.format(Date())
         if(user.data != null){
             userName = user.data.userName
             uuid = user.data.uuid

@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.room.Room
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
@@ -25,6 +26,7 @@ import kajilab.togawa.staywatchbeaconandroid.component.SignInView
 import kajilab.togawa.staywatchbeaconandroid.model.BlePeripheralServerManager
 import kajilab.togawa.staywatchbeaconandroid.api.GoogleAuthUiClient
 import kajilab.togawa.staywatchbeaconandroid.component.BeaconView
+import kajilab.togawa.staywatchbeaconandroid.db.AppDatabase
 import kajilab.togawa.staywatchbeaconandroid.ui.theme.StayWatchBeaconAndroidTheme
 import kajilab.togawa.staywatchbeaconandroid.viewModel.BeaconViewModel
 import pub.devrel.easypermissions.EasyPermissions
@@ -71,6 +73,13 @@ class MainActivity : ComponentActivity() {
             .requestEmail()
             .build()
 
+        // ROOMでデータベースの立ち上げ
+        val db = Room.databaseBuilder(
+            applicationContext,
+            AppDatabase::class.java,
+            "beacon_database"
+        ).build()
+
         // GoogleSignInClientの初期化
         //googleSignInClient = GoogleSignIn.getClient(this, gso)
 
@@ -112,9 +121,9 @@ class MainActivity : ComponentActivity() {
                 ) {
                     //Greeting("Android")
                     if(viewModel.email == null){
-                        SignInView(viewModel, googleAuthUiClient)
+                        SignInView(viewModel, googleAuthUiClient, db)
                     }else{
-                        BeaconView(viewModel, peripheralServiceManager, application)
+                        BeaconView(viewModel, peripheralServiceManager, application, db)
                     }
                     //BeaconView(viewModel, peripheralServiceManager, application)
 //                    Button(onClick = { signIn() }) {

@@ -27,6 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kajilab.togawa.staywatchbeaconandroid.R
+import kajilab.togawa.staywatchbeaconandroid.db.AppDatabase
 import kajilab.togawa.staywatchbeaconandroid.model.BlePeripheralServerManager
 import kajilab.togawa.staywatchbeaconandroid.ui.theme.StayWatchBeaconAndroidTheme
 import kajilab.togawa.staywatchbeaconandroid.viewModel.BeaconViewModel
@@ -34,7 +35,7 @@ import kajilab.togawa.staywatchbeaconandroid.service.BlePeripheralService
 import java.util.UUID
 
 @Composable
-fun BeaconView (viewModel: BeaconViewModel, peripheralServerManager: BlePeripheralServerManager, application: Context) {
+fun BeaconView (viewModel: BeaconViewModel, peripheralServerManager: BlePeripheralServerManager, application: Context, db: AppDatabase) {
 
     val communityName = remember {
         mutableStateOf("梶研究室")
@@ -77,6 +78,7 @@ fun BeaconView (viewModel: BeaconViewModel, peripheralServerManager: BlePeripher
                 Button(
                     onClick = {
                         Log.d("Button", "別Googleでサインイン！")
+                        viewModel.email = null
                               },
                     colors = ButtonDefaults.buttonColors(Color.Transparent),
                     border = BorderStroke(3.dp, Color(0xFFF8CC45))
