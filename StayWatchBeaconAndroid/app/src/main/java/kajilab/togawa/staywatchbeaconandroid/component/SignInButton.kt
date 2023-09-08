@@ -1,5 +1,6 @@
 package kajilab.togawa.staywatchbeaconandroid.component
 
+import android.content.Context
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -22,7 +23,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Composable
-fun SignInButton(googleAuthUiClient: GoogleAuthUiClient, viewModel: BeaconViewModel, db: AppDatabase) {
+fun SignInButton(googleAuthUiClient: GoogleAuthUiClient, viewModel: BeaconViewModel, db: AppDatabase, context: Context) {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "sign_in"){
         composable("sign_in") {
@@ -39,7 +40,7 @@ fun SignInButton(googleAuthUiClient: GoogleAuthUiClient, viewModel: BeaconViewMo
                             Log.d("MainActivity", "RESULT_OKだったよ")
                             Log.d("MainActivity", "signInResult: " + signInResult.toString())
                             // viewModelのメソッドへトークンとメールアドレスを渡してデータベース関連とBLEサービス開始処理を行う
-                            viewModel.storeUserAndToken(signInResult.data?.email.toString(), signInResult.data?.token.toString(), db)
+                            viewModel.storeUserAndToken(signInResult.data?.email.toString(), signInResult.data?.token.toString(), db, context)
                         }
                     }
 

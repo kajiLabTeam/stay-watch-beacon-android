@@ -121,7 +121,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     //Greeting("Android")
                     if(viewModel.email == null){
-                        SignInView(viewModel, googleAuthUiClient, db)
+                        SignInView(viewModel, googleAuthUiClient, db, application)
                     }else{
                         BeaconView(viewModel, peripheralServiceManager, application, db)
                     }

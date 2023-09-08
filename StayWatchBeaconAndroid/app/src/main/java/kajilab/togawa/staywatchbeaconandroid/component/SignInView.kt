@@ -1,5 +1,6 @@
 package kajilab.togawa.staywatchbeaconandroid.component
 
+import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,7 +18,7 @@ import kajilab.togawa.staywatchbeaconandroid.db.AppDatabase
 import kajilab.togawa.staywatchbeaconandroid.viewModel.BeaconViewModel
 
 @Composable
-fun SignInView(viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient, db:AppDatabase) {
+fun SignInView(viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient, db:AppDatabase, context: Context) {
 
 
     Column(
@@ -49,7 +50,7 @@ fun SignInView(viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient,
                     fontSize = 25.sp
                 )
             }
-            SignInButton(googleAuthUiClient = googleAuthClient, viewModel = viewModel, db = db)
+            SignInButton(googleAuthUiClient = googleAuthClient, viewModel = viewModel, db = db, context = context)
 
 //            Button(
 //                onClick = {viewModel.testUser()}

@@ -18,6 +18,7 @@ import kajilab.togawa.staywatchbeaconandroid.model.BlePeripheralServerManager
 import kajilab.togawa.staywatchbeaconandroid.model.SignInResult
 import kajilab.togawa.staywatchbeaconandroid.service.BlePeripheralService
 import kajilab.togawa.staywatchbeaconandroid.state.SignInState
+import kajilab.togawa.staywatchbeaconandroid.useCase.EncryptedSharePreferencesManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -57,20 +58,25 @@ class BeaconViewModel(): ViewModel() {
         _state.update { SignInState() }
     }
 
-    suspend fun storeUserAndToken(gmail:String, token:String, db:AppDatabase){
+    suspend fun storeUserAndToken(gmail:String, token:String, db:AppDatabase, context:Context){
         val dao = db.userDao()
+        val encryptedSharedPreferencesManager = EncryptedSharePreferencesManager(context)
 
         Log.d("ViewModel", "トークンとメールアドレス保存するぞう")
         Log.d("ViewModel", gmail)
         Log.d("ViewModel", token)
 
         // トークンを保存
+        var error = encryptedSharedPreferencesManager.storeString("TOKEN", token)
+        if(error != null){
+            Log.d("ViewModel", "トークンの保存に失敗しました")
+            // 失敗しても処理は続行してもよいためreturnはなし
+        }
 
         // トークン使って滞在ウォッチサーバからユーザ情報取得
         Log.d("ViewModel", "GoogleIDトークンを使って滞在ウォッチサーバからユーザ取得するぞう")
         val stayWatchClient = StayWatchClient()
         val user = stayWatchClient.getUserFromServer(token)
-        //val user = stayWatchClient.getUserFromServerWithOkHttp(token)
         Log.d("ViewModel", "ユーザ情報：" + user.data?.userName)
 
         // 現在時刻の取得
@@ -115,8 +121,9 @@ class BeaconViewModel(): ViewModel() {
         // ペリフェラルサービスを開始
     }
 
-    suspend fun signOut(db:AppDatabase){
+    suspend fun signOut(db:AppDatabase, context:Context){
         val dao = db.userDao()
+        val encryptedSharedPreferencesManager = EncryptedSharePreferencesManager(context)
 
         // データベースからユーザ情報の削除
         dao.deleteUserById(1)
@@ -132,6 +139,12 @@ class BeaconViewModel(): ViewModel() {
         // ペリフェラルサービスを停止
 
         // 保存されているトークンを削除
+        var error = encryptedSharedPreferencesManager.deleteString("TOKEN")
+        if(error != null){
+            Log.d("ViewModel", "トークンの削除に失敗しました")
+            return
+        }
+
     }
 
 
@@ -163,6 +176,7 @@ class BeaconViewModel(): ViewModel() {
         Log.d("viewModel", "stopBleAdvertisingを開始するよ")
         peripheralServiceManager.clear()
     }
+
 
 //    @RequiresApi(Build.VERSION_CODES.O)
 //    fun startAdvertising(){
