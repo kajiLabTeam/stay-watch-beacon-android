@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.util.Date
@@ -119,6 +120,63 @@ class BeaconViewModel(): ViewModel() {
         }
 
         // ペリフェラルサービスを開始
+    }
+
+    suspend fun syncUser(db:AppDatabase, context: Context): String?{
+        val dao = db.userDao()
+        val encryptedSharePreferencesManager = EncryptedSharePreferencesManager(context)
+
+        // トークンの取得
+        val (token, error) = encryptedSharePreferencesManager.getString("TOKEN")
+        if(error != null){
+            Log.d("ViewModel", "トークンの取得に失敗しました")
+            return error.toString()
+        }
+        Log.d("ViewModel", "GoogleIDトークン：$token")
+
+        // サーバーからユーザ情報を取得
+        Log.d("ViewModel", "GoogleIDトークンを使って滞在ウォッチサーバからユーザ取得するぞう")
+        val stayWatchClient = StayWatchClient()
+        val user = stayWatchClient.getUserFromServer(token)
+        if(user.errorMessage != null){
+            // ユーザの取得が失敗したら終了
+            print(user.errorMessage)
+            return user.errorMessage
+        }
+        Log.d("ViewModel", "ユーザ情報：" + user.data?.userName)
+
+        // emailの値を取得
+        val currentUser = dao.getUserById(1)
+        val gmail = currentUser.email
+
+        // 現在時刻の取得
+        val formatter = SimpleDateFormat("yyyy-M-d H:mm")
+        latestSyncTime = formatter.format(Date())
+
+        // ユーザ情報を上書きするためデータベースへ保存(ユーザは一人であるためidは1固定)
+        dao.createUser(DBUser(
+            id = 1,
+            name = user.data?.userName,
+            uuid = user.data?.uuid,
+            email = "sample@gmail.com",
+            communityName = user.data?.communityName,
+            latestSyncTime = latestSyncTime
+        ))
+
+        // UIに反映
+        if(user.data != null){
+            userName = user.data.userName
+            uuid = user.data.uuid
+            communityName = user.data.communityName
+        }else if(user.data == null){
+            userName = ""
+            uuid = ""
+            communityName = ""
+        }
+
+
+        // ペリフェラルサービスを開始
+        return null
     }
 
     suspend fun signOut(db:AppDatabase, context:Context){

@@ -27,6 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kajilab.togawa.staywatchbeaconandroid.R
+import kajilab.togawa.staywatchbeaconandroid.api.GoogleAuthUiClient
 import kajilab.togawa.staywatchbeaconandroid.db.AppDatabase
 import kajilab.togawa.staywatchbeaconandroid.model.BlePeripheralServerManager
 import kajilab.togawa.staywatchbeaconandroid.ui.theme.StayWatchBeaconAndroidTheme
@@ -38,7 +39,7 @@ import kotlinx.coroutines.launch
 import java.util.UUID
 
 @Composable
-fun BeaconView (viewModel: BeaconViewModel, peripheralServerManager: BlePeripheralServerManager, application: Context, db: AppDatabase) {
+fun BeaconView (viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient, peripheralServerManager: BlePeripheralServerManager, application: Context, db: AppDatabase) {
 
     val communityName = remember {
         mutableStateOf("梶研究室")
@@ -82,7 +83,7 @@ fun BeaconView (viewModel: BeaconViewModel, peripheralServerManager: BlePeripher
                     onClick = {
                         Log.d("Button", "サインアウト！")
                         CoroutineScope(Dispatchers.IO).launch {
-                            viewModel.signOut(db)
+                            viewModel.signOut(db, application)
                         }
                               },
                     colors = ButtonDefaults.buttonColors(Color.Transparent),
@@ -147,18 +148,7 @@ fun BeaconView (viewModel: BeaconViewModel, peripheralServerManager: BlePeripher
 //                painter = rememberVectorPainter(image = Icons.Default.Star),
 //                contentDescription = null,
 //            )
-            Button(
-                onClick = {
-                    Log.d("Button", "同期")
-                    //peripheralServerManager.clear()
-                    viewModel.startPeripheralService(application)
-                }
-            ) {
-                Image(
-                    painter = painterResource(R.drawable.forward_circle),
-                    contentDescription = null,
-                )
-            }
+            SyncButton(googleAuthUiClient = googleAuthClient, viewModel = viewModel, db = db, context = application)
             Text(
                 text = "最新の同期：" + viewModel.latestSyncTime,
                 color = Color.Gray,

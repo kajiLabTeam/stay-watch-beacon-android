@@ -123,7 +123,7 @@ class MainActivity : ComponentActivity() {
                     if(viewModel.email == null){
                         SignInView(viewModel, googleAuthUiClient, db, application)
                     }else{
-                        BeaconView(viewModel, peripheralServiceManager, application, db)
+                        BeaconView(viewModel, googleAuthUiClient, peripheralServiceManager, application, db)
                     }
                     //BeaconView(viewModel, peripheralServiceManager, application)
 //                    Button(onClick = { signIn() }) {
