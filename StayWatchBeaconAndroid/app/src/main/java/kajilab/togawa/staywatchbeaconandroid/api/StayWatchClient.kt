@@ -44,7 +44,18 @@ class StayWatchClient {
         firebaseAuth.signInWithCredential(credential)
         val firebaseUser = firebaseAuth.currentUser
         Log.d("StayWatchClient", "firebaseAuthは $firebaseUser")
-        val firebaseIdToken = firebaseUser?.getIdToken(false)?.result?.token
+        var firebaseIdToken:String? = null
+        try {
+            firebaseIdToken = firebaseUser?.getIdToken(false)?.result?.token
+        }catch (e: Exception){
+            // googleIdトークンが無効なエラー
+            return StayWatchServerResult(
+                data = null,
+                errorMessage = e.message.toString()
+            )
+        }
+
+        //val firebaseIdToken = firebaseUser?.getIdToken(false)?.result?.token
         Log.d("StayWatchClient", "firebaseAuthは $firebaseIdToken")
 
         // FirebaseIDトークンを用いて滞在ウォッチサーバからユーザ情報取得
@@ -57,6 +68,7 @@ class StayWatchClient {
         return when (result) {
             // 失敗時
             is Result.Failure -> {
+                // 通信失敗エラー
                 Log.d("API", "API通信失敗")
                 val ex = result.getException()
                 println(ex)

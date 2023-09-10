@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
 import android.util.Log
+import android.widget.Toast
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.BeginSignInRequest.GoogleIdTokenRequestOptions
 import com.google.android.gms.auth.api.identity.SignInClient
@@ -14,7 +15,9 @@ import com.google.firebase.ktx.Firebase
 import kajilab.togawa.staywatchbeaconandroid.R
 import kajilab.togawa.staywatchbeaconandroid.model.SignInResult
 import kajilab.togawa.staywatchbeaconandroid.model.UserData
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import java.util.concurrent.CancellationException
 
 class GoogleAuthUiClient(
@@ -33,6 +36,9 @@ class GoogleAuthUiClient(
             ).await()
         } catch (e: Exception) {
             Log.d("error", "時間を開けて再度やり直してください")
+            withContext(Dispatchers.Main){
+                Toast.makeText(context, "通信に失敗しました", Toast.LENGTH_SHORT).show()
+            }
             e.printStackTrace()
             if(e is CancellationException) throw e
             null

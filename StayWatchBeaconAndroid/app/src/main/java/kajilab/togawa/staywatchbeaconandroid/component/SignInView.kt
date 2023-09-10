@@ -15,10 +15,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kajilab.togawa.staywatchbeaconandroid.api.GoogleAuthUiClient
 import kajilab.togawa.staywatchbeaconandroid.db.AppDatabase
+import kajilab.togawa.staywatchbeaconandroid.model.BlePeripheralServerManager
 import kajilab.togawa.staywatchbeaconandroid.viewModel.BeaconViewModel
 
 @Composable
-fun SignInView(viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient, db:AppDatabase, context: Context) {
+fun SignInView(viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient, db:AppDatabase, context: Context, peripheralServerManager: BlePeripheralServerManager) {
 
 
     Column(
@@ -50,7 +51,7 @@ fun SignInView(viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient,
                     fontSize = 25.sp
                 )
             }
-            SignInButton(googleAuthUiClient = googleAuthClient, viewModel = viewModel, db = db, context = context)
+            SignInButton(googleAuthUiClient = googleAuthClient, viewModel = viewModel, db = db, context = context, peripheralServerManager = peripheralServerManager)
 
 //            Button(
 //                onClick = {viewModel.testUser()}

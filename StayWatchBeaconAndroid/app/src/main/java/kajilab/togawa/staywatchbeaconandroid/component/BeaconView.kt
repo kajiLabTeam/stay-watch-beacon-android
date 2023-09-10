@@ -148,7 +148,7 @@ fun BeaconView (viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient
 //                painter = rememberVectorPainter(image = Icons.Default.Star),
 //                contentDescription = null,
 //            )
-            SyncButton(googleAuthUiClient = googleAuthClient, viewModel = viewModel, db = db, context = application)
+            SyncButton(googleAuthUiClient = googleAuthClient, viewModel = viewModel, db = db, context = application, peripheralServiceManager = peripheralServerManager)
             Text(
                 text = "最新の同期：" + viewModel.latestSyncTime,
                 color = Color.Gray,

@@ -2,6 +2,7 @@ package kajilab.togawa.staywatchbeaconandroid.component
 
 import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
@@ -17,13 +18,15 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import kajilab.togawa.staywatchbeaconandroid.api.GoogleAuthUiClient
 import kajilab.togawa.staywatchbeaconandroid.db.AppDatabase
+import kajilab.togawa.staywatchbeaconandroid.model.BlePeripheralServerManager
 import kajilab.togawa.staywatchbeaconandroid.viewModel.BeaconViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
-fun SignInButton(googleAuthUiClient: GoogleAuthUiClient, viewModel: BeaconViewModel, db: AppDatabase, context: Context) {
+fun SignInButton(googleAuthUiClient: GoogleAuthUiClient, viewModel: BeaconViewModel, db: AppDatabase, context: Context, peripheralServerManager: BlePeripheralServerManager) {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "sign_in"){
         composable("sign_in") {
@@ -36,11 +39,14 @@ fun SignInButton(googleAuthUiClient: GoogleAuthUiClient, viewModel: BeaconViewMo
                             val signInResult = googleAuthUiClient.getSignWithIntent(
                                 intent = result.data ?: return@launch
                             )
+                            withContext(Dispatchers.Main){
+                                Toast.makeText(context, "サインイン成功", Toast.LENGTH_SHORT).show()
+                            }
                             viewModel.onSignInResult(signInResult)
                             Log.d("MainActivity", "RESULT_OKだったよ")
                             Log.d("MainActivity", "signInResult: " + signInResult.toString())
                             // viewModelのメソッドへトークンとメールアドレスを渡してデータベース関連とBLEサービス開始処理を行う
-                            viewModel.storeUserAndToken(signInResult.data?.email.toString(), signInResult.data?.token.toString(), db, context)
+                            viewModel.signInUser(signInResult.data?.email.toString(), signInResult.data?.token.toString(), db, context, peripheralServerManager)
                         }
                     }
 

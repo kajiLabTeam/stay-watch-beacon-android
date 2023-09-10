@@ -2,6 +2,7 @@ package kajilab.togawa.staywatchbeaconandroid.component
 
 import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
@@ -20,14 +21,16 @@ import androidx.navigation.compose.rememberNavController
 import kajilab.togawa.staywatchbeaconandroid.R
 import kajilab.togawa.staywatchbeaconandroid.api.GoogleAuthUiClient
 import kajilab.togawa.staywatchbeaconandroid.db.AppDatabase
+import kajilab.togawa.staywatchbeaconandroid.model.BlePeripheralServerManager
 import kajilab.togawa.staywatchbeaconandroid.viewModel.BeaconViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 @Composable
-fun SyncButton(googleAuthUiClient: GoogleAuthUiClient, viewModel: BeaconViewModel, db: AppDatabase, context: Context) {
+fun SyncButton(googleAuthUiClient: GoogleAuthUiClient, viewModel: BeaconViewModel, db: AppDatabase, context: Context, peripheralServiceManager: BlePeripheralServerManager) {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "sign_in"){
         composable("sign_in") {
@@ -44,7 +47,7 @@ fun SyncButton(googleAuthUiClient: GoogleAuthUiClient, viewModel: BeaconViewMode
                             Log.d("MainActivity", "RESULT_OKだったよ")
                             Log.d("MainActivity", "signInResult: " + signInResult.toString())
                             // viewModelのメソッドへトークンとメールアドレスを渡してデータベース関連とBLEサービス開始処理を行う
-                            viewModel.storeUserAndToken(signInResult.data?.email.toString(), signInResult.data?.token.toString(), db, context)
+                            viewModel.signInUser(signInResult.data?.email.toString(), signInResult.data?.token.toString(), db, context, peripheralServiceManager)
                         }
                     }
 
@@ -53,8 +56,9 @@ fun SyncButton(googleAuthUiClient: GoogleAuthUiClient, viewModel: BeaconViewMode
 
             Button(onClick = {
                 Log.d("SyncButton", "SignInScreen開始")
+                Toast.makeText(context, "同期開始", Toast.LENGTH_SHORT).show()
                 CoroutineScope(Dispatchers.IO).launch {
-                    var error = viewModel.syncUser(db, context)
+                    var error = viewModel.syncUser(db, context, peripheralServiceManager)
                     if(error != null){
                         // 同期が失敗(トークンが古い)場合サインイン画面を出す
                         val signInIntentSender = googleAuthUiClient.signIn()
@@ -64,7 +68,7 @@ fun SyncButton(googleAuthUiClient: GoogleAuthUiClient, viewModel: BeaconViewMode
                             ).build()
                         )
                     }
-                    Log.d("SignInScreen", "サインインボタンが押されたよ")
+                    Log.d("SignInScreen", "同期ボタンが押されたよ")
                 }
             },
                 //colors = ButtonDefaults.buttonColors(Color(0xFFF8CC45))

@@ -14,10 +14,17 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.window.Dialog
 import androidx.room.Room
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -29,6 +36,9 @@ import kajilab.togawa.staywatchbeaconandroid.component.BeaconView
 import kajilab.togawa.staywatchbeaconandroid.db.AppDatabase
 import kajilab.togawa.staywatchbeaconandroid.ui.theme.StayWatchBeaconAndroidTheme
 import kajilab.togawa.staywatchbeaconandroid.viewModel.BeaconViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import pub.devrel.easypermissions.EasyPermissions
 
 
@@ -80,6 +90,11 @@ class MainActivity : ComponentActivity() {
             "beacon_database"
         ).build()
 
+        // viewModelのステートにデータベースからのユーザ情報を入れる
+        CoroutineScope(Dispatchers.IO).launch {
+            viewModel.startViewModel(db)
+        }
+
         // GoogleSignInClientの初期化
         //googleSignInClient = GoogleSignIn.getClient(this, gso)
 
@@ -112,6 +127,9 @@ class MainActivity : ComponentActivity() {
         bleManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         bleAdapter = bleManager.getAdapter()
 
+        // ユーザ情報をデータベースから取得
+
+
         setContent {
             StayWatchBeaconAndroidTheme {
                 // A surface container using the 'background' color from the theme
@@ -121,7 +139,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     //Greeting("Android")
                     if(viewModel.email == null){
-                        SignInView(viewModel, googleAuthUiClient, db, application)
+                        SignInView(viewModel, googleAuthUiClient, db, application, peripheralServiceManager)
                     }else{
                         BeaconView(viewModel, googleAuthUiClient, peripheralServiceManager, application, db)
                     }
