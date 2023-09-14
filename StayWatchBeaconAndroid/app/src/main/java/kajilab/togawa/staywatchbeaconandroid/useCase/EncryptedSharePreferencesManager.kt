@@ -38,6 +38,7 @@ class EncryptedSharePreferencesManager(context: Context) {
             value = sharedPreferences.getString(key, "").toString()
         }catch(e: Exception){
             // うまく取得できなかったらerrorを返す
+            print(e)
             return Pair("", e)
         }
         return Pair(value, null)

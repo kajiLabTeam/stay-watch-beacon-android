@@ -35,9 +35,8 @@ class GoogleAuthUiClient(
                 buildSignInRequest()
             ).await()
         } catch (e: Exception) {
-            Log.d("error", "時間を開けて再度やり直してください")
             withContext(Dispatchers.Main){
-                Toast.makeText(context, "通信に失敗しました", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "通信に失敗しました\n通信環境の良い場所でお試しください", Toast.LENGTH_SHORT).show()
             }
             e.printStackTrace()
             if(e is CancellationException) throw e

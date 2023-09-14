@@ -21,6 +21,7 @@ import kajilab.togawa.staywatchbeaconandroid.model.SignInResult
 import kajilab.togawa.staywatchbeaconandroid.service.BlePeripheralService
 import kajilab.togawa.staywatchbeaconandroid.state.SignInState
 import kajilab.togawa.staywatchbeaconandroid.useCase.EncryptedSharePreferencesManager
+import kajilab.togawa.staywatchbeaconandroid.utils.StatusCode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,6 +41,8 @@ class BeaconViewModel(): ViewModel() {
     var beaconStatus:String by mutableStateOf("停止中")
     //var isAdvertising = MutableLiveData(false)
     var isLoading by mutableStateOf(true)
+
+    private val statusCode = StatusCode
 
     var userName by mutableStateOf("")
     var uuid by mutableStateOf("")
@@ -81,7 +84,8 @@ class BeaconViewModel(): ViewModel() {
         )}
     }
 
-    suspend fun signInUser(gmail:String, token:String, db:AppDatabase, context:Context, peripheralServiceManager: BlePeripheralServerManager){
+    // 返す値：400 or 410 or Null
+    suspend fun signInUser(gmail:String, token:String, db:AppDatabase, context:Context, peripheralServiceManager: BlePeripheralServerManager): Number?{
         val encryptedSharedPreferencesManager = EncryptedSharePreferencesManager(context)
 
         Log.d("ViewModel", "トークンとメールアドレス保存するぞう")
@@ -96,19 +100,23 @@ class BeaconViewModel(): ViewModel() {
         }
 
         // ここから合併できそう
-        val strError = storeUserAndStartService(db, peripheralServiceManager, token, gmail)
-        if(strError != null){
+        val errorCode = storeUserAndStartService(db, peripheralServiceManager, token, gmail)
+        if(errorCode != null){
             Log.d("ViewModel", "サービス開始できませんでした")
-            withContext(Dispatchers.Main){
-                Toast.makeText(context, "サインイン失敗", Toast.LENGTH_SHORT).show()
-            }
-            return
+//            withContext(Dispatchers.Main){
+//                Toast.makeText(context, "サインイン失敗", Toast.LENGTH_SHORT).show()
+//            }
+            return errorCode
         }
 
         email = gmail
+        return null
     }
 
-    suspend fun syncUser(db:AppDatabase, context: Context, peripheralServiceManager: BlePeripheralServerManager): String?{
+    /**
+     * 返す値：400 or 410 or 430 or null
+     */
+    suspend fun syncUser(db:AppDatabase, context: Context, peripheralServiceManager: BlePeripheralServerManager): Number?{
         val dao = db.userDao()
         val encryptedSharePreferencesManager = EncryptedSharePreferencesManager(context)
 
@@ -116,7 +124,7 @@ class BeaconViewModel(): ViewModel() {
         val (token, error) = encryptedSharePreferencesManager.getString("TOKEN")
         if(error != null){
             Log.d("ViewModel", "端末からトークンを取得するのに失敗しました")
-            return error.toString()
+            return statusCode.UNABLE_GET_TOKEN_FROM_DEVICE
         }
         Log.d("ViewModel", "GoogleIDトークン：$token")
 
@@ -124,23 +132,26 @@ class BeaconViewModel(): ViewModel() {
         val currentUser = dao.getUserById(1)
         val gmail = currentUser.email.toString()
 
-        val strError = storeUserAndStartService(db, peripheralServiceManager, token, gmail)
-        if(strError != null){
+        val errorCode = storeUserAndStartService(db, peripheralServiceManager, token, gmail)
+        if(errorCode != null){
             Log.d("ViewModel", "サービス開始できませんでした")
-            withContext(Dispatchers.Main){
-                Toast.makeText(context, "同期失敗", Toast.LENGTH_SHORT).show()
-            }
-            return strError
+//            withContext(Dispatchers.Main){
+//                Toast.makeText(context, "同期失敗", Toast.LENGTH_SHORT).show()
+//            }
+            return errorCode
         }
 
-        withContext(Dispatchers.Main){
-            Toast.makeText(context, "同期完了", Toast.LENGTH_SHORT).show()
-        }
+//        withContext(Dispatchers.Main){
+//            Toast.makeText(context, "同期完了", Toast.LENGTH_SHORT).show()
+//        }
 
         return null
     }
 
-    private suspend fun storeUserAndStartService(db:AppDatabase, peripheralServiceManager: BlePeripheralServerManager, token: String, gmail: String) : String?{
+    /**
+     * 返す値：400 or 410 or Null
+     */
+    private suspend fun storeUserAndStartService(db:AppDatabase, peripheralServiceManager: BlePeripheralServerManager, token: String, gmail: String) : Number?{
         val dao = db.userDao()
 
         // サーバーからユーザ情報を取得
@@ -150,7 +161,7 @@ class BeaconViewModel(): ViewModel() {
         if(user.errorMessage != null){
             // サーバーからユーザを取得するのが失敗したら終了
             print(user.errorMessage)
-            return user.errorMessage
+            return user.errorStatus
         }
         Log.d("ViewModel", "ユーザ情報：" + user.data?.userName)
 

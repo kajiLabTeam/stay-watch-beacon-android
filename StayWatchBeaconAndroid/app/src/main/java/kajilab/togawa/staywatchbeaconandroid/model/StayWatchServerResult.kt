@@ -2,7 +2,8 @@ package kajilab.togawa.staywatchbeaconandroid.model
 
 data class StayWatchServerResult (
     val data: StayWatchUser?,
-    val errorMessage: String?
+    val errorMessage: String?,
+    val errorStatus: Number?
 )
 
 data class StayWatchUser(

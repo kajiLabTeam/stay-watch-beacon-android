@@ -14,6 +14,7 @@ import kajilab.togawa.staywatchbeaconandroid.model.StayWatchServerResult
 import kajilab.togawa.staywatchbeaconandroid.model.StayWatchUser
 import kajilab.togawa.staywatchbeaconandroid.model.User
 import kajilab.togawa.staywatchbeaconandroid.model.UserGetResponse
+import kajilab.togawa.staywatchbeaconandroid.utils.StatusCode
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
 import okhttp3.Call
@@ -25,17 +26,10 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
 
-data class TmpUser (
-    val id: Int,
-    val uuid: String,
-    val name: String,
-    val role: Int,
-    val communityName: String,
-        )
-
 class StayWatchClient {
     //private val url = "https://apppppp.com/jojo.json"
     private val url = "https://go-staywatch.kajilab.tk/api/v1/check"
+    private val statusCode = StatusCode
 
     fun getUserFromServer(googleIdToken: String): StayWatchServerResult {
         // GoogleIDトークン(GoogleIDのトークン)からFirebaseIDトークン(プロジェクト内でのトークン)を取得
@@ -51,7 +45,8 @@ class StayWatchClient {
             // googleIdトークンが無効なエラー
             return StayWatchServerResult(
                 data = null,
-                errorMessage = e.message.toString()
+                errorMessage = e.message.toString(),
+                errorStatus = statusCode.INVALID_GOOGLE_TOKEN
             )
         }
 
@@ -76,7 +71,8 @@ class StayWatchClient {
                 // 返り値
                 StayWatchServerResult(
                     data = null,
-                    errorMessage = ex.message.toString()
+                    errorMessage = ex.message.toString(),
+                    errorStatus = statusCode.NO_NETWORK_CONNECTION
                 )
             }
 
@@ -97,93 +93,10 @@ class StayWatchClient {
                         uuid = responseUser.uuid,
                         communityName = responseUser.communityName
                     ),
-                    errorMessage = null
+                    errorMessage = null,
+                    errorStatus = null
                 )
             }
         }
     }
 }
-//    fun getUser(): String {
-//        url.httpGet().responseJson { request, response, result ->
-//            when (result) {
-//                // ステータスコード 2xx
-//                is Result.Success -> {
-//                    Log.d("API", "API通信成功")
-//                    result.get().obj()
-////                    Log.d("API", "API通信成功")
-////                    val resultJson = result.get().obj()
-////                    // JSONObjectをUserDetailへ変換
-////                    val resultUser = Gson().fromJson(resultJson.toString(), UserDetail::class.java)
-////                    Log.d("API", resultUser.name)
-////                    Log.d("API", "API通信終了")
-////                    resultUser
-//                }
-//                // ステータスコード 2xx以外(401など)
-//                is Result.Failure -> {
-//                    // エラー処理
-//                    Log.d("API", "API通信失敗")
-//                }
-//            }
-//        }
-
-//class StayWatchClient {
-//    private val url = "https://apppppp.com/jojo.json"
-//
-//    fun getUser(): JSONObject {
-//        val (_, _, result) = url.httpGet().responseJson()
-//        return when (result) {
-//            is Result.Failure -> {
-//                Log.d("API", "API通信失敗")
-//                val ex = result.getException()
-//                JSONObject(mapOf("message" to ex.toString()))
-//            }
-//            is Result.Success -> {
-//                Log.d("API", "API通信成功")
-//                result.get().obj()
-//            }
-//        }
-//    }
-//}
-//        url.httpGet().responseJson {request, response, result ->
-//            when(result) {
-//                // ステータスコード 2xx
-//                is Result.Success -> {
-//                    Log.d("API", "API通信成功")
-//                    result.get().obj()
-////                    Log.d("API", "API通信成功")
-////                    val resultJson = result.get().obj()
-////                    // JSONObjectをUserDetailへ変換
-////                    val resultUser = Gson().fromJson(resultJson.toString(), UserDetail::class.java)
-////                    Log.d("API", resultUser.name)
-////                    Log.d("API", "API通信終了")
-////                    resultUser
-//                }
-//                // ステータスコード 2xx以外(401など)
-//                is Result.Failure -> {
-//                    // エラー処理
-//                    Log.d("API", "API通信失敗")
-//                }
-//            }
-
-//    suspend fun getUser(): JSONObject {
-//        // コルーチンをバックグラウンドスレッドで実行する
-//        return withContext(IO) {
-//            // ネットワークリクエストを実行する
-//            val (_, _, result) = url.httpGet().responseJson()
-//
-//            // レスポンスからユーザーデータを返す
-//            when (result) {
-//                is Result.Failure -> {
-//                    val ex = result.getException()
-//
-//                    Log.d("API", "ユーザ取得API通信失敗")
-//                    JSONObject(mapOf("message" to ex.toString()))
-//                }
-//                is Result.Success -> {
-//                    Log.d("API", "ユーザ取得API通信成功")
-//                    print(result)
-//                    result.get().obj()
-//                }
-//            }
-//        }
-//      }

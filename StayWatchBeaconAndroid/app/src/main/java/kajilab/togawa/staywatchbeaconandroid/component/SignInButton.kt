@@ -19,6 +19,7 @@ import androidx.navigation.compose.rememberNavController
 import kajilab.togawa.staywatchbeaconandroid.api.GoogleAuthUiClient
 import kajilab.togawa.staywatchbeaconandroid.db.AppDatabase
 import kajilab.togawa.staywatchbeaconandroid.model.BlePeripheralServerManager
+import kajilab.togawa.staywatchbeaconandroid.utils.StatusCode
 import kajilab.togawa.staywatchbeaconandroid.viewModel.BeaconViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -28,6 +29,7 @@ import kotlinx.coroutines.withContext
 @Composable
 fun SignInButton(googleAuthUiClient: GoogleAuthUiClient, viewModel: BeaconViewModel, db: AppDatabase, context: Context, peripheralServerManager: BlePeripheralServerManager) {
     val navController = rememberNavController()
+    val statusCode = StatusCode
     NavHost(navController = navController, startDestination = "sign_in"){
         composable("sign_in") {
 
@@ -40,13 +42,34 @@ fun SignInButton(googleAuthUiClient: GoogleAuthUiClient, viewModel: BeaconViewMo
                                 intent = result.data ?: return@launch
                             )
                             withContext(Dispatchers.Main){
-                                Toast.makeText(context, "サインイン成功", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "ユーザ情報取得中", Toast.LENGTH_SHORT).show()
                             }
                             viewModel.onSignInResult(signInResult)
                             Log.d("MainActivity", "RESULT_OKだったよ")
                             Log.d("MainActivity", "signInResult: " + signInResult.toString())
                             // viewModelのメソッドへトークンとメールアドレスを渡してデータベース関連とBLEサービス開始処理を行う
-                            viewModel.signInUser(signInResult.data?.email.toString(), signInResult.data?.token.toString(), db, context, peripheralServerManager)
+                            val errorCode = viewModel.signInUser(signInResult.data?.email.toString(), signInResult.data?.token.toString(), db, context, peripheralServerManager)
+                            if(errorCode != null){
+                                // サインイン失敗時の処理
+                                when (errorCode) {
+                                    statusCode.NO_NETWORK_CONNECTION -> {
+                                        withContext(Dispatchers.Main){
+                                            Toast.makeText(context, "サインイン失敗\n通信環境の良い場所でお試しください", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                    statusCode.INVALID_GOOGLE_TOKEN -> {
+                                        withContext(Dispatchers.Main){
+                                            Toast.makeText(context, "サインイン失敗\nトークンの取得に失敗しました", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                }
+                            }
+                            else{
+                                // サインイン成功時の処理
+                                withContext(Dispatchers.Main){
+                                    Toast.makeText(context, "サインイン成功", Toast.LENGTH_SHORT).show()
+                                }
+                            }
                         }
                     }
 

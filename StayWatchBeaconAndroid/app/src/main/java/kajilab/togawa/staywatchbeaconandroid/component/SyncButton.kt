@@ -22,6 +22,7 @@ import kajilab.togawa.staywatchbeaconandroid.R
 import kajilab.togawa.staywatchbeaconandroid.api.GoogleAuthUiClient
 import kajilab.togawa.staywatchbeaconandroid.db.AppDatabase
 import kajilab.togawa.staywatchbeaconandroid.model.BlePeripheralServerManager
+import kajilab.togawa.staywatchbeaconandroid.utils.StatusCode
 import kajilab.togawa.staywatchbeaconandroid.viewModel.BeaconViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -31,6 +32,7 @@ import kotlinx.coroutines.withContext
 
 @Composable
 fun SyncButton(googleAuthUiClient: GoogleAuthUiClient, viewModel: BeaconViewModel, db: AppDatabase, context: Context, peripheralServiceManager: BlePeripheralServerManager) {
+    val statusCode = StatusCode
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "sign_in"){
         composable("sign_in") {
@@ -58,15 +60,36 @@ fun SyncButton(googleAuthUiClient: GoogleAuthUiClient, viewModel: BeaconViewMode
                 Log.d("SyncButton", "SignInScreen開始")
                 Toast.makeText(context, "同期開始", Toast.LENGTH_SHORT).show()
                 CoroutineScope(Dispatchers.IO).launch {
-                    var error = viewModel.syncUser(db, context, peripheralServiceManager)
-                    if(error != null){
-                        // 同期が失敗(トークンが古い)場合サインイン画面を出す
-                        val signInIntentSender = googleAuthUiClient.signIn()
-                        launcher.launch(
-                            IntentSenderRequest.Builder(
-                                signInIntentSender ?: return@launch
-                            ).build()
-                        )
+                    var errorCode = viewModel.syncUser(db, context, peripheralServiceManager)
+                    if(errorCode != null){
+                        // 同期に失敗した時の処理
+                        when (errorCode) {
+                            statusCode.NO_NETWORK_CONNECTION -> {
+                                withContext(Dispatchers.Main){
+                                    Toast.makeText(context, "同期失敗\n通信環境の良い場所でお試しください", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                            statusCode.UNABLE_GET_TOKEN_FROM_DEVICE -> {
+                                withContext(Dispatchers.Main){
+                                    Toast.makeText(context, "BLEの発信に失敗", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                            statusCode.INVALID_GOOGLE_TOKEN -> {
+                                // 同期が失敗(トークンが古い)場合サインイン画面を出す
+                                val signInIntentSender = googleAuthUiClient.signIn()
+                                launcher.launch(
+                                    IntentSenderRequest.Builder(
+                                        signInIntentSender ?: return@launch
+                                    ).build()
+                                )
+                            }
+                        }
+                    }
+                    else{
+                        // 同期に成功した時の処理
+                        withContext(Dispatchers.Main){
+                            Toast.makeText(context, "同期成功", Toast.LENGTH_SHORT).show()
+                        }
                     }
                     Log.d("SignInScreen", "同期ボタンが押されたよ")
                 }
