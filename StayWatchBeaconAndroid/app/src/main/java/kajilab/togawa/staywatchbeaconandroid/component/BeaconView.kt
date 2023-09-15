@@ -53,9 +53,6 @@ fun BeaconView (viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient
     val latestSyncTime = remember {
         mutableStateOf("2023/02/01 11:53")
     }
-    val isAdvertising = remember {
-        mutableStateOf(false)
-    }
 
 
     Column(
@@ -83,7 +80,7 @@ fun BeaconView (viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient
                     onClick = {
                         Log.d("Button", "サインアウト！")
                         CoroutineScope(Dispatchers.IO).launch {
-                            viewModel.signOut(db, application)
+                            viewModel.signOut(db, application, peripheralServerManager)
                         }
                               },
                     colors = ButtonDefaults.buttonColors(Color.Transparent),
@@ -122,8 +119,8 @@ fun BeaconView (viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient
         ) {
             // 発信中・停止中の四角
             AdvertiseStatusPanel(
-                textStr = if(isAdvertising.value) "発信中" else "停止中",
-                panelColor = if(isAdvertising.value) Color(0xFF007AFF) else Color(0xFFFF3B30),
+                textStr = if(viewModel.isAdvertising) "発信中" else "停止中",
+                panelColor = if(viewModel.isAdvertising) Color(0xFF007AFF) else Color(0xFFFF3B30),
                 textColor = Color.White
             )
 
@@ -159,12 +156,11 @@ fun BeaconView (viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient
         }
 
         // 発信開始停止ボタン
-        if(isAdvertising.value){
+        if(viewModel.isAdvertising){
             Button(
                 onClick = {
                     Log.d("Button", "発信を停止")
                     viewModel.stopBleAdvertising(peripheralServerManager)
-                    isAdvertising.value = false
                           },
                 colors = ButtonDefaults.buttonColors(Color.Transparent)
             ) {
@@ -179,7 +175,6 @@ fun BeaconView (viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient
                     Log.d("Button", "発信を開始")
                     //viewModel.updateStatus()
                     viewModel.startBleAdvertising(peripheralServerManager)
-                    isAdvertising.value = true
                           },
                 colors = ButtonDefaults.buttonColors(Color.Transparent)
             ) {

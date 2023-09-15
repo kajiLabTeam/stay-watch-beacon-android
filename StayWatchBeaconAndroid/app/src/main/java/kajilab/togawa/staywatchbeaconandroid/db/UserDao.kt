@@ -2,9 +2,11 @@ package kajilab.togawa.staywatchbeaconandroid.db
 
 import androidx.room.Dao
 import androidx.room.Delete
+import androidx.room.DeleteTable
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 
 @Dao
 interface UserDao {
@@ -22,6 +24,9 @@ interface UserDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun createUser(vararg user: DBUser)
+
+    @Query("UPDATE dbuser SET is_allowed_advertising = :isAllowedAdvertising WHERE id LIKE 1")
+    fun updateAdvertisingAllowance(isAllowedAdvertising: Boolean)
 
     @Query("DELETE FROM dbuser WHERE id = :id")
     fun deleteUserById(id: Int)

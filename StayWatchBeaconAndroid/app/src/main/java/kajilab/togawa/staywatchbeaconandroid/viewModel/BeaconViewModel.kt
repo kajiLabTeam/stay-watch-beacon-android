@@ -65,16 +65,18 @@ class BeaconViewModel(): ViewModel() {
             return
         }
 
-        if(user.name == null || user.uuid == null || user.communityName == null || user.latestSyncTime == null){
+        if(user.name == null || user.uuid == null || user.communityName == null || user.latestSyncTime == null || user.isAllowedAdvertising == null){
             // サーバに登録されていないユーザでサインインしている状態のときはemailだけ入れる
             email = user.email
             return
         }
-        userName = user.name!!
-        uuid = user.uuid!!
+        Log.d("StartViewModel", "$user")
+        userName = user.name
+        uuid = user.uuid
         email = user.email
-        communityName = user.communityName!!
-        latestSyncTime = user.latestSyncTime!!
+        communityName = user.communityName
+        latestSyncTime = user.latestSyncTime
+        isAdvertising = user.isAllowedAdvertising
     }
 
     fun onSignInResult(result: SignInResult) {
@@ -84,7 +86,9 @@ class BeaconViewModel(): ViewModel() {
         )}
     }
 
-    // 返す値：400 or 410 or Null
+    /**
+     * 返す値：400 or 410 or null
+     */
     suspend fun signInUser(gmail:String, token:String, db:AppDatabase, context:Context, peripheralServiceManager: BlePeripheralServerManager): Number?{
         val encryptedSharedPreferencesManager = EncryptedSharePreferencesManager(context)
 
@@ -110,6 +114,7 @@ class BeaconViewModel(): ViewModel() {
         }
 
         email = gmail
+        isAdvertising
         return null
     }
 
@@ -177,7 +182,8 @@ class BeaconViewModel(): ViewModel() {
             uuid = user.data?.uuid,
             email = gmail,
             communityName = user.data?.communityName,
-            latestSyncTime = latestSyncTime
+            latestSyncTime = latestSyncTime,
+            isAllowedAdvertising = false
         ))
 
 
@@ -205,16 +211,19 @@ class BeaconViewModel(): ViewModel() {
         userName = user.data.userName
         uuid = user.data.uuid
         communityName = user.data.communityName
+        isAdvertising = true
 
         // ペリフェラルサービスを開始
         peripheralServiceManager.clear()
         peripheralServiceManager.startAdvertising(advertisingUuid)
         Log.d("ViewModel", "${advertisingUuid}をアドバタイズするよ")
 
+        dao.updateAdvertisingAllowance(true)
+
         return null
     }
 
-    suspend fun signOut(db:AppDatabase, context:Context){
+    suspend fun signOut(db:AppDatabase, context:Context, peripheralServiceManager: BlePeripheralServerManager){
         val dao = db.userDao()
         val encryptedSharedPreferencesManager = EncryptedSharePreferencesManager(context)
 
@@ -227,9 +236,12 @@ class BeaconViewModel(): ViewModel() {
         uuid = ""
         communityName = ""
         latestSyncTime = ""
+        isAdvertising = false
 
 
         // ペリフェラルサービスを停止
+        peripheralServiceManager.clear()
+        dao.updateAdvertisingAllowance(true)
 
 
         // 保存されているトークンを削除
