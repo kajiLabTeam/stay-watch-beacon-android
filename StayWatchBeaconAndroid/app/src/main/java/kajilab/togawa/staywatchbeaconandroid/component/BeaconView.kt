@@ -3,6 +3,7 @@ package kajilab.togawa.staywatchbeaconandroid.component
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -33,27 +34,16 @@ import kajilab.togawa.staywatchbeaconandroid.model.BlePeripheralServerManager
 import kajilab.togawa.staywatchbeaconandroid.ui.theme.StayWatchBeaconAndroidTheme
 import kajilab.togawa.staywatchbeaconandroid.viewModel.BeaconViewModel
 import kajilab.togawa.staywatchbeaconandroid.service.BlePeripheralService
+import kajilab.togawa.staywatchbeaconandroid.utils.StatusCode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.UUID
 
 @Composable
 fun BeaconView (viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient, peripheralServerManager: BlePeripheralServerManager, application: Context, db: AppDatabase) {
-
-    val communityName = remember {
-        mutableStateOf("梶研究室")
-    }
-    val userName = remember {
-        mutableStateOf("kajilabkjlb")
-    }
-    val uuid = remember {
-        mutableStateOf("e7d61ea3-f8dd-49c8-8f2f-f24f00200015")
-    }
-    val latestSyncTime = remember {
-        mutableStateOf("2023/02/01 11:53")
-    }
-
+    val statusCode = StatusCode
 
     Column(
         modifier = Modifier
@@ -160,7 +150,9 @@ fun BeaconView (viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient
             Button(
                 onClick = {
                     Log.d("Button", "発信を停止")
-                    viewModel.stopBleAdvertising(peripheralServerManager)
+                    CoroutineScope(Dispatchers.IO).launch {
+                        viewModel.stopAdvertisingService(db, peripheralServerManager)
+                    }
                           },
                 colors = ButtonDefaults.buttonColors(Color.Transparent)
             ) {
@@ -172,9 +164,23 @@ fun BeaconView (viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient
         } else {
             Button(
                 onClick = {
-                    Log.d("Button", "発信を開始")
-                    //viewModel.updateStatus()
-                    viewModel.startBleAdvertising(peripheralServerManager)
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val errorCode = viewModel.startAdvertisingService(db, peripheralServerManager)
+                        if(errorCode != null){
+                            when (errorCode) {
+                                statusCode.UNABLE_GET_USER_FROM_DATABASE -> {
+                                    withContext(Dispatchers.Main){
+                                        Toast.makeText(application, "発信開始失敗", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                                statusCode.INVALID_UUID -> {
+                                    withContext(Dispatchers.Main){
+                                        Toast.makeText(application, "発信開始失敗", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            }
+                        }
+                    }
                           },
                 colors = ButtonDefaults.buttonColors(Color.Transparent)
             ) {

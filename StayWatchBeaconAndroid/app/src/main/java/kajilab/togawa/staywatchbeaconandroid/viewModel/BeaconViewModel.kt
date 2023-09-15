@@ -253,6 +253,60 @@ class BeaconViewModel(): ViewModel() {
 
     }
 
+    /**
+     * 返す値：401 or 440 or Null
+     */
+    fun startAdvertisingService(db: AppDatabase, peripheralServiceManager: BlePeripheralServerManager): Number?{
+        val dao = db.userDao()
+        Log.d("ViewModel", "アドバタイジングサービスをスタート")
+
+        // データベースからユーザ取得
+        val dbUser = dao.getUserById(1)
+
+        val dbUuid = dbUser.uuid
+        if(dbUuid == null){
+            Log.d("ViewModel", "データベースからUUIDの取得に失敗しました")
+            return statusCode.UNABLE_GET_USER_FROM_DATABASE
+        }
+
+        // uuidをUUIDの型に変換
+        val advertisingUuid = convertUuidFromString(dbUuid)
+        if(advertisingUuid == null){
+            Log.d("ViewModel", "UUIDの型変換に失敗しました")
+            isAdvertising = false
+            return statusCode.INVALID_UUID
+        }
+
+        // アドバタイジング開始
+        peripheralServiceManager.clear()
+        peripheralServiceManager.startAdvertising(advertisingUuid)
+
+        // アドバタイジングの許可の有無をUIへ反映
+        isAdvertising = true
+        // UUIDをデータベースへ保存
+        dao.updateAdvertisingAllowance(true)
+
+        return null
+    }
+
+    /**
+     * 返す値：Null
+     */
+    fun stopAdvertisingService(db: AppDatabase, peripheralServiceManager: BlePeripheralServerManager): Number?{
+        val dao = db.userDao()
+        Log.d("ViewModel", "アドバタイジングサービスをストップ")
+
+        // アドバタイジング停止
+        peripheralServiceManager.clear()
+
+        // アドバタイジングの許可の有無をUIへ反映
+        isAdvertising = false
+        // UUIDをデータベースへ保存
+        dao.updateAdvertisingAllowance(false)
+
+        return null
+    }
+
 
     fun testUser(){
         Log.d("ViewModel", "testUserが実行開始")
