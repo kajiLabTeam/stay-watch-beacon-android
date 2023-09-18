@@ -210,7 +210,18 @@ class BeaconViewModel(): ViewModel() {
             isAdvertising = false
             return null
         }
-        // ユーザ情報がバックエンドに登録されている場合
+        // ＝ユーザ情報がバックエンドに登録されている場合の処理＝
+        // Androidビーコンと登録されているかチェック
+        if(!isAndroidBeaconUUID(user.data.uuid)){
+            Log.d("ViewModel", "Androidビーコンとして登録されていません")
+            peripheralServiceManager.clear()
+            // UIへ反映
+            userName = user.data.userName
+            uuid = user.data.uuid
+            communityName = user.data.communityName
+            isAdvertising = false
+            return null
+        }
         // UUIDをStringからUUIDの型へ変換
         val advertisingUuid = convertUuidFromString(user.data.uuid)
         if(advertisingUuid == null){
