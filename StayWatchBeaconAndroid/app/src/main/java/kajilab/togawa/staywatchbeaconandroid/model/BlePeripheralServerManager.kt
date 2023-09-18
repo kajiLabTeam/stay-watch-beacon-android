@@ -11,11 +11,15 @@ import android.bluetooth.le.AdvertiseSettings
 import android.bluetooth.le.BluetoothLeAdvertiser
 import android.os.ParcelUuid
 import android.util.Log
+import androidx.room.Room
+import kajilab.togawa.staywatchbeaconandroid.db.AppDatabase
+import kajilab.togawa.staywatchbeaconandroid.db.DBUser
 import kajilab.togawa.staywatchbeaconandroid.observer.BaseBondingObserver
 import kajilab.togawa.staywatchbeaconandroid.observer.BaseConnectionObserver
 //import asia.groovelab.blesample.extension.asHexByteArray
 import no.nordicsemi.android.ble.BleServerManager
 import no.nordicsemi.android.ble.observer.ServerObserver
+import java.lang.Exception
 import java.util.*
 
 class BlePeripheralServerManager(private val context: Context) : BleServerManager(context) {
@@ -117,6 +121,62 @@ class BlePeripheralServerManager(private val context: Context) : BleServerManage
     // アドバタイズ停止
     private fun stopAdvertising() {
         advertiser?.stopAdvertising(advertiseCallback)
+    }
+
+    // アドバタイズするUUIDを取得
+    fun getAdvertisingUUID(db: AppDatabase): UUID? {
+
+        val dao = db.userDao()
+
+        val dbUser: DBUser? = dao.getUserById(1)
+        if(dbUser == null){
+            return null
+        }
+        if(dbUser.uuid == null || dbUser.isAllowedAdvertising == null){
+            return null
+        }
+        if(!dbUser.isAllowedAdvertising){
+            return null
+        }
+
+        val advertisingUuid = convertUuidFromString(dbUser.uuid)
+        if(advertisingUuid == null){
+            return null
+        }
+
+        return advertisingUuid
+    }
+
+    // 8ebc21144abdba0db7c6ff0a0020002b: String -> 8ebc2114-4abd-ba0d-b7c6-ff0a0020002b: String
+    private fun formatUuidString(strUuid: String): String {
+        val formattedStr = buildString {
+            append(strUuid.substring(0,8))
+            append("-")
+            append(strUuid.substring(8,12))
+            append("-")
+            append(strUuid.substring(12,16))
+            append("-")
+            append(strUuid.substring(16,20))
+            append("-")
+            append(strUuid.substring(20))
+        }
+        Log.d("ViewModel", "formattedUuid:$formattedStr")
+        return formattedStr
+    }
+
+    // 8ebc2114-4abd-ba0d-b7c6-ff0a0020002b: String -> 8ebc2114-4abd-ba0d-b7c6-ff0a0020002b: UUID
+    private fun convertUuidFromString(strUuid: String): UUID? {
+        Log.d("ViewModel", "formatに出すUUID $strUuid")
+        val formattedStr = formatUuidString(strUuid)
+        //val formattedStr = "8ebc2114-4abd-ba0d-b7c6-ff0a0020002b"
+        var resultUuid: UUID? = null
+        try{
+            resultUuid = UUID.fromString(formattedStr)
+            Log.d("ViewModel", "uuid: $resultUuid")
+        } catch(e: Exception){
+            return null
+        }
+        return resultUuid
     }
 
     fun clear() {

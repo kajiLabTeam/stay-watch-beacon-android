@@ -8,12 +8,20 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
+import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.room.Room
 import kajilab.togawa.staywatchbeaconandroid.MainActivity
 import kajilab.togawa.staywatchbeaconandroid.R
+import kajilab.togawa.staywatchbeaconandroid.db.AppDatabase
 import kajilab.togawa.staywatchbeaconandroid.model.BlePeripheralServerManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.UUID
 
 class BlePeripheralService: Service() {
@@ -23,61 +31,61 @@ class BlePeripheralService: Service() {
         const val CHANNEL_TITLE = "滞在ウォッチ作動中"
     }
 
+    private val peripheralServerManager = BlePeripheralServerManager(this)
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
         Log.d("Service", "スタートアップサービスが起動")
 
+        // ROOMでデータベースの立ち上げ
+        val db = Room.databaseBuilder(
+            this,
+            AppDatabase::class.java,
+            "beacon_database"
+        ).build()
+
+        val manager = NotificationManagerCompat.from(this)
+        val channel = NotificationChannelCompat.Builder(
+            CHANNEL_ID,
+            NotificationManagerCompat.IMPORTANCE_DEFAULT
+        )
+            .setName("滞在ウォッチ動作中")
+            .build()
+        manager.createNotificationChannel(channel)
+
+        // アクティビティを起動するIntentを作成
         val openIntent = Intent(this, MainActivity::class.java).let {
             PendingIntent.getActivity(this, 0, it, PendingIntent.FLAG_IMMUTABLE)
         }
 
-        //2．通知チャネル登録
-        val channelId = CHANNEL_ID
-        val channelName = "TestService Channel"
-        val channel = NotificationChannel(
-            channelId, channelName,
-            NotificationManager.IMPORTANCE_DEFAULT
-        )
-        val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        manager.createNotificationChannel(channel)
-
-        //4. 通知の作成
-        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle(CHANNEL_TITLE)
-            .setContentText("BLE出してるよ")
+        val notification = NotificationCompat.Builder(this, channel.id)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentTitle("滞在ウォッチ動作中")
+            .setContentText("ビーコンアプリが動作中です")
             .setContentIntent(openIntent)
+            .setOngoing(true)
             .build()
 
-        //5. 通知の表示
-        startForeground(1212, notification)
+        CoroutineScope(Dispatchers.IO).launch {
+            // BLEアドバタイズ
+            val advertisingUUID = peripheralServerManager.getAdvertisingUUID(db)
+            if(advertisingUUID == null){
+                // UUIDが正しくない場合
+                return@launch
+            }
+            peripheralServerManager.startAdvertising(advertisingUUID)
 
-        // BLEアドバタイズのクラスのインスタンス化
-        val peripheralManager = BlePeripheralServerManager(this)
-        val advertisingUUID:UUID = UUID.fromString("8ebc2114-4abd-ba0d-b7c6-0a00200055")
-        peripheralManager.startAdvertising(advertisingUUID)
-        //peripheralManager.startAdvertising(UUID.randomUUID())
-
-//        Thread(
-//            Runnable {
-//                // 10秒かかる処理 (スリープで代用)
-//                for (i in 0..200) {
-//                    Log.i("service", "サービス中" + i.toString())
-//                    Thread.sleep(1000)
-//                }
-//
-//                // フォアグラウンドの停止
-//                stopForeground(Service.STOP_FOREGROUND_REMOVE)
-//
-//                // サービスの停止
-//                stopSelf()
-//            }).start()
+            //5. 通知の表示
+            startForeground(1212, notification)
+        }
         return START_STICKY
     }
 
     override fun onDestroy() {
         Log.d("Service", "サービスが終了")
+        //val peripheralManager = BlePeripheralServerManager(this)
+        peripheralServerManager.clear()
         super.onDestroy()
     }
 

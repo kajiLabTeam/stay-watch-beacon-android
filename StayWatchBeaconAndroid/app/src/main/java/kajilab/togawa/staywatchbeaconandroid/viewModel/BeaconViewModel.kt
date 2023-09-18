@@ -105,7 +105,7 @@ class BeaconViewModel(): ViewModel() {
         }
 
         // ここから合併できそう
-        val errorCode = storeUserAndStartService(db, peripheralServiceManager, token, gmail)
+        val errorCode = storeUserAndStartService(context, db, peripheralServiceManager, token, gmail)
         if(errorCode != null){
             Log.d("ViewModel", "サービス開始できませんでした")
 //            withContext(Dispatchers.Main){
@@ -138,7 +138,7 @@ class BeaconViewModel(): ViewModel() {
         val currentUser = dao.getUserById(1)
         val gmail = currentUser.email
 
-        val errorCode = storeUserAndStartService(db, peripheralServiceManager, token, gmail)
+        val errorCode = storeUserAndStartService(context, db, peripheralServiceManager, token, gmail)
         if(errorCode != null){
             Log.d("ViewModel", "サービス開始できませんでした")
             return errorCode
@@ -150,7 +150,7 @@ class BeaconViewModel(): ViewModel() {
     /**
      * 返す値：400 or 410 or 450 or Null
      */
-    private suspend fun storeUserAndStartService(db:AppDatabase, peripheralServiceManager: BlePeripheralServerManager, token: String, gmail: String?) : Number?{
+    private suspend fun storeUserAndStartService(context:Context, db:AppDatabase, peripheralServiceManager: BlePeripheralServerManager, token: String, gmail: String?) : Number?{
         val dao = db.userDao()
 
         // 現在時刻の取得
@@ -238,8 +238,11 @@ class BeaconViewModel(): ViewModel() {
         isAdvertising = true
 
         // ペリフェラルサービスを開始
-        peripheralServiceManager.clear()
-        peripheralServiceManager.startAdvertising(advertisingUuid)
+//        peripheralServiceManager.clear()
+//        peripheralServiceManager.startAdvertising(advertisingUuid)
+        val intent = Intent(context, BlePeripheralService::class.java)
+        context.stopService(intent)
+        startForegroundService(context, intent)
         Log.d("ViewModel", "${advertisingUuid}をアドバタイズするよ")
 
         dao.updateAdvertisingAllowance(true)
@@ -264,7 +267,9 @@ class BeaconViewModel(): ViewModel() {
 
 
         // ペリフェラルサービスを停止
-        peripheralServiceManager.clear()
+//        peripheralServiceManager.clear()
+        val intent = Intent(context, BlePeripheralService::class.java)
+        context.stopService(intent)
         dao.updateAdvertisingAllowance(true)
 
 
@@ -280,7 +285,7 @@ class BeaconViewModel(): ViewModel() {
     /**
      * 返す値：401 or 440 or Null
      */
-    fun startAdvertisingService(db: AppDatabase, peripheralServiceManager: BlePeripheralServerManager): Number?{
+    fun startAdvertisingService(db: AppDatabase, peripheralServiceManager: BlePeripheralServerManager, context: Context): Number?{
         val dao = db.userDao()
         Log.d("ViewModel", "アドバタイジングサービスをスタート")
 
@@ -302,8 +307,12 @@ class BeaconViewModel(): ViewModel() {
         }
 
         // アドバタイジング開始
-        peripheralServiceManager.clear()
-        peripheralServiceManager.startAdvertising(advertisingUuid)
+        val intent = Intent(context, BlePeripheralService::class.java)
+        context.stopService(intent)
+        startForegroundService(context, intent)
+
+//        peripheralServiceManager.clear()
+//        peripheralServiceManager.startAdvertising(advertisingUuid)
 
         // アドバタイジングの許可の有無をUIへ反映
         isAdvertising = true
@@ -316,17 +325,19 @@ class BeaconViewModel(): ViewModel() {
     /**
      * 返す値：Null
      */
-    fun stopAdvertisingService(db: AppDatabase, peripheralServiceManager: BlePeripheralServerManager): Number?{
+    fun stopAdvertisingService(db: AppDatabase, peripheralServiceManager: BlePeripheralServerManager, context: Context): Number?{
         val dao = db.userDao()
         Log.d("ViewModel", "アドバタイジングサービスをストップ")
 
         // アドバタイジング停止
-        peripheralServiceManager.clear()
+        val intent = Intent(context, BlePeripheralService::class.java)
+        context.stopService(intent)
 
         // アドバタイジングの許可の有無をUIへ反映
         isAdvertising = false
         // UUIDをデータベースへ保存
         dao.updateAdvertisingAllowance(false)
+
 
         return null
     }
@@ -351,15 +362,18 @@ class BeaconViewModel(): ViewModel() {
         Log.d("ViewModel", "testUserが実行終了")
     }
 
-    fun startBleAdvertising(peripheralServiceManager: BlePeripheralServerManager){
+    fun startBleAdvertising(context: Context){
         Log.d("viewModel", "startBleAdvertisingを開始するよ")
-        peripheralServiceManager.clear()
-        peripheralServiceManager.startAdvertising(UUID.randomUUID())
+
+        val intent = Intent(context, BlePeripheralService::class.java)
+        startForegroundService(context, intent)
     }
 
-    fun stopBleAdvertising(peripheralServiceManager: BlePeripheralServerManager){
+    fun stopBleAdvertising(context: Context){
         Log.d("viewModel", "stopBleAdvertisingを開始するよ")
-        peripheralServiceManager.clear()
+
+        val intent = Intent(context, BlePeripheralService::class.java)
+        context.stopService(intent)
     }
 
     // 8ebc21144abdba0db7c6ff0a0020002b: String -> 8ebc2114-4abd-ba0d-b7c6-ff0a0020002b: String

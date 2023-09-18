@@ -184,7 +184,7 @@ fun BeaconView (viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient
                     onClick = {
                         Log.d("Button", "発信を停止")
                         CoroutineScope(Dispatchers.IO).launch {
-                            viewModel.stopAdvertisingService(db, peripheralServerManager)
+                            viewModel.stopAdvertisingService(db, peripheralServerManager, application)
                         }
                     },
                     colors = ButtonDefaults.buttonColors(Color.Transparent)
@@ -198,7 +198,7 @@ fun BeaconView (viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient
                 Button(
                     onClick = {
                         CoroutineScope(Dispatchers.IO).launch {
-                            val errorCode = viewModel.startAdvertisingService(db, peripheralServerManager)
+                            val errorCode = viewModel.startAdvertisingService(db, peripheralServerManager, application)
                             if(errorCode != null){
                                 when (errorCode) {
                                     statusCode.UNABLE_GET_USER_FROM_DATABASE -> {
