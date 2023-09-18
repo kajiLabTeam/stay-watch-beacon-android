@@ -31,6 +31,9 @@ class StayWatchClient {
     private val url = "https://go-staywatch.kajilab.tk/api/v1/check"
     private val statusCode = StatusCode
 
+    /**
+     * 返すエラーコード：400 or 410 or 450 or null
+     */
     fun getUserFromServer(googleIdToken: String): StayWatchServerResult {
         // GoogleIDトークン(GoogleIDのトークン)からFirebaseIDトークン(プロジェクト内でのトークン)を取得
         val credential = GoogleAuthProvider.getCredential(googleIdToken, null)
@@ -68,12 +71,23 @@ class StayWatchClient {
                 val ex = result.getException()
                 println(ex)
 
-                // 返り値
-                StayWatchServerResult(
-                    data = null,
-                    errorMessage = ex.message.toString(),
-                    errorStatus = statusCode.NO_NETWORK_CONNECTION
-                )
+                val httpStatusCode = result.getException().response.statusCode
+
+                if(httpStatusCode == 500){
+                    // サーバーには繋がるがユーザ情報が見つからない時の返り値
+                    StayWatchServerResult(
+                        data = null,
+                        errorMessage = ex.message.toString(),
+                        errorStatus = statusCode.UNABLE_FIND_USER_IN_SERVER
+                    )
+                }else{
+                    // サーバーに接続できない時の返り値
+                    StayWatchServerResult(
+                        data = null,
+                        errorMessage = ex.message.toString(),
+                        errorStatus = statusCode.NO_NETWORK_CONNECTION
+                    )
+                }
             }
 
             // 成功時

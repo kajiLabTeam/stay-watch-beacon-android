@@ -30,4 +30,9 @@ object StatusCode {
      * 440
      */
     const val UNABLE_GET_USER_FROM_DATABASE = 440
+
+    /**
+     * 450
+     */
+    const val UNABLE_FIND_USER_IN_SERVER = 450
 }

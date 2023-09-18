@@ -49,7 +49,7 @@ fun SyncButton(googleAuthUiClient: GoogleAuthUiClient, viewModel: BeaconViewMode
                             Log.d("MainActivity", "RESULT_OKだったよ")
                             Log.d("MainActivity", "signInResult: " + signInResult.toString())
                             // viewModelのメソッドへトークンとメールアドレスを渡してデータベース関連とBLEサービス開始処理を行う
-                            viewModel.signInUser(signInResult.data?.email.toString(), signInResult.data?.token.toString(), db, context, peripheralServiceManager)
+                            viewModel.signInUser(signInResult.data?.email, signInResult.data?.token.toString(), db, context, peripheralServiceManager)
                         }
                     }
 
@@ -67,6 +67,11 @@ fun SyncButton(googleAuthUiClient: GoogleAuthUiClient, viewModel: BeaconViewMode
                             statusCode.NO_NETWORK_CONNECTION -> {
                                 withContext(Dispatchers.Main){
                                     Toast.makeText(context, "同期失敗\n通信環境の良い場所でお試しください", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                            statusCode.UNABLE_FIND_USER_IN_SERVER -> {
+                                withContext(Dispatchers.Main){
+                                    Toast.makeText(context, "ユーザ情報が見つかりません", Toast.LENGTH_SHORT).show()
                                 }
                             }
                             statusCode.UNABLE_GET_TOKEN_FROM_DEVICE -> {

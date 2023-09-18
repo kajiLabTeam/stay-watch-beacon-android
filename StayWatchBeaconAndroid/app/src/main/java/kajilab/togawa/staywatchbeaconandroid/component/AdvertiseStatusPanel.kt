@@ -1,6 +1,8 @@
 package kajilab.togawa.staywatchbeaconandroid.component
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,15 +19,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun AdvertiseStatusPanel(modifier: Modifier = Modifier,textStr:String, panelColor: Color, textColor: Color){
+fun AdvertiseStatusPanel(modifier: Modifier = Modifier,textStr:String, panelColor: Color, textColor: Color, borderColor: Color){
     Column (
         modifier = Modifier
             .padding(all = 20.dp)
             .height(250.dp)
             .fillMaxWidth()
+            .border(
+                width = 2.dp,
+                color = borderColor,
+                shape = RoundedCornerShape(20.dp)
+            )
             .background(
                 color = panelColor,
-                shape = RoundedCornerShape(20.dp)
+                shape = RoundedCornerShape(20.dp),
             ),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center

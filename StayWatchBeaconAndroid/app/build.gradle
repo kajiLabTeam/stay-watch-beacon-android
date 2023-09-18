@@ -105,6 +105,9 @@ dependencies {
     implementation "androidx.security:security-app-authenticator:1.0.0-alpha02"
     androidTestImplementation "androidx.security:security-app-authenticator:1.0.0-alpha01"
 
+    // 通知関連
+    //implementation "com.android.support:support-compat:28.0.0"
+
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'

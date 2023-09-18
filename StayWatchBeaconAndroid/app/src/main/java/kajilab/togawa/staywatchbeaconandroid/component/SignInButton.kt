@@ -48,7 +48,7 @@ fun SignInButton(googleAuthUiClient: GoogleAuthUiClient, viewModel: BeaconViewMo
                             Log.d("MainActivity", "RESULT_OKだったよ")
                             Log.d("MainActivity", "signInResult: " + signInResult.toString())
                             // viewModelのメソッドへトークンとメールアドレスを渡してデータベース関連とBLEサービス開始処理を行う
-                            val errorCode = viewModel.signInUser(signInResult.data?.email.toString(), signInResult.data?.token.toString(), db, context, peripheralServerManager)
+                            val errorCode = viewModel.signInUser(signInResult.data?.email, signInResult.data?.token.toString(), db, context, peripheralServerManager)
                             if(errorCode != null){
                                 // サインイン失敗時の処理
                                 when (errorCode) {
@@ -60,6 +60,11 @@ fun SignInButton(googleAuthUiClient: GoogleAuthUiClient, viewModel: BeaconViewMo
                                     statusCode.INVALID_GOOGLE_TOKEN -> {
                                         withContext(Dispatchers.Main){
                                             Toast.makeText(context, "サインイン失敗\nトークンの取得に失敗しました", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                    statusCode.UNABLE_FIND_USER_IN_SERVER -> {
+                                        withContext(Dispatchers.Main){
+                                            Toast.makeText(context, "ユーザ情報が見つかりません", Toast.LENGTH_SHORT).show()
                                         }
                                     }
                                 }

@@ -68,6 +68,7 @@ class BeaconViewModel(): ViewModel() {
         if(user.name == null || user.uuid == null || user.communityName == null || user.latestSyncTime == null || user.isAllowedAdvertising == null){
             // サーバに登録されていないユーザでサインインしている状態のときはemailだけ入れる
             email = user.email
+            latestSyncTime = user.latestSyncTime!!
             return
         }
         Log.d("StartViewModel", "$user")
@@ -87,13 +88,13 @@ class BeaconViewModel(): ViewModel() {
     }
 
     /**
-     * 返す値：400 or 410 or null
+     * 返す値：400 or 410 or 450 or null
      */
-    suspend fun signInUser(gmail:String, token:String, db:AppDatabase, context:Context, peripheralServiceManager: BlePeripheralServerManager): Number?{
+    suspend fun signInUser(gmail:String?, token:String, db:AppDatabase, context:Context, peripheralServiceManager: BlePeripheralServerManager): Number?{
         val encryptedSharedPreferencesManager = EncryptedSharePreferencesManager(context)
 
         Log.d("ViewModel", "トークンとメールアドレス保存するぞう")
-        Log.d("ViewModel", gmail)
+        Log.d("ViewModel", "$gmail")
         Log.d("ViewModel", token)
 
         // トークンを保存
@@ -119,7 +120,7 @@ class BeaconViewModel(): ViewModel() {
     }
 
     /**
-     * 返す値：400 or 410 or 430 or null
+     * 返す値：400 or 410 or 430 or 450 or null
      */
     suspend fun syncUser(db:AppDatabase, context: Context, peripheralServiceManager: BlePeripheralServerManager): Number?{
         val dao = db.userDao()
@@ -135,45 +136,57 @@ class BeaconViewModel(): ViewModel() {
 
         // gmailの取得
         val currentUser = dao.getUserById(1)
-        val gmail = currentUser.email.toString()
+        val gmail = currentUser.email
 
         val errorCode = storeUserAndStartService(db, peripheralServiceManager, token, gmail)
         if(errorCode != null){
             Log.d("ViewModel", "サービス開始できませんでした")
-//            withContext(Dispatchers.Main){
-//                Toast.makeText(context, "同期失敗", Toast.LENGTH_SHORT).show()
-//            }
             return errorCode
         }
-
-//        withContext(Dispatchers.Main){
-//            Toast.makeText(context, "同期完了", Toast.LENGTH_SHORT).show()
-//        }
 
         return null
     }
 
     /**
-     * 返す値：400 or 410 or Null
+     * 返す値：400 or 410 or 450 or Null
      */
-    private suspend fun storeUserAndStartService(db:AppDatabase, peripheralServiceManager: BlePeripheralServerManager, token: String, gmail: String) : Number?{
+    private suspend fun storeUserAndStartService(db:AppDatabase, peripheralServiceManager: BlePeripheralServerManager, token: String, gmail: String?) : Number?{
         val dao = db.userDao()
+
+        // 現在時刻の取得
+        val formatter = SimpleDateFormat("yyyy-M-d H:mm")
+        // UIに反映
+        latestSyncTime = formatter.format(Date())
+
+        Log.d("ViewModel", "gmailの中身は：$gmail")
+
+        // ネットに繋がらない場合gmailはnullが入るため
+        if(gmail == null){
+            // ネットに繋がらない場合はサービスの開始停止、データベースの更新何もしない
+            return statusCode.NO_NETWORK_CONNECTION
+        }
 
         // サーバーからユーザ情報を取得
         Log.d("ViewModel", "GoogleIDトークンを使って滞在ウォッチサーバからユーザ取得するぞう")
         val stayWatchClient = StayWatchClient()
         val user = stayWatchClient.getUserFromServer(token)
         if(user.errorMessage != null){
-            // サーバーからユーザを取得するのが失敗したら終了
+            // サーバーからユーザを取得するのが失敗したときの処理
+            dao.createUser(DBUser(
+                id = 1,
+                name = null,
+                uuid = null,
+                email = gmail,
+                communityName = null,
+                latestSyncTime = latestSyncTime,
+                isAllowedAdvertising = false
+            ))
+            // UIに反映
+            email = gmail
             print(user.errorMessage)
             return user.errorStatus
         }
         Log.d("ViewModel", "ユーザ情報：" + user.data?.userName)
-
-
-        // 現在時刻の取得
-        val formatter = SimpleDateFormat("yyyy-M-d H:mm")
-        latestSyncTime = formatter.format(Date())
 
         // ユーザ情報を上書きするためデータベースへ保存(ユーザは一人であるためidは1固定)
         dao.createUser(DBUser(
@@ -305,6 +318,13 @@ class BeaconViewModel(): ViewModel() {
         dao.updateAdvertisingAllowance(false)
 
         return null
+    }
+
+    fun isAndroidBeaconUUID(uuid: String): Boolean{
+        if(uuid.length != 32 || uuid[23] != 'a'){
+            return false
+        }
+        return true
     }
 
 

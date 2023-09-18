@@ -1,12 +1,16 @@
 package kajilab.togawa.staywatchbeaconandroid
 
 import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattServer
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.BluetoothLeAdvertiser
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -25,6 +29,8 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.window.Dialog
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.room.Room
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -55,6 +61,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var bleLeAdvertiser: BluetoothLeAdvertiser
     private lateinit var bleAdapter: BluetoothAdapter
     private lateinit var bleManager: BluetoothManager
+
 
     // firebase関連
 //    private lateinit var googleSignInClient: GoogleSignInClient
@@ -127,8 +134,31 @@ class MainActivity : ComponentActivity() {
         bleManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         bleAdapter = bleManager.getAdapter()
 
-        // ユーザ情報をデータベースから取得
-
+        // 通知関連
+//        val CHANNEL_ID = "stay6000"
+//        //1．通知領域タップで戻ってくる先のActivity
+//        val openIntent = Intent(this, MainActivity::class.java).let {
+//            PendingIntent.getActivity(this, 0, it, PendingIntent.FLAG_IMMUTABLE)
+//        }
+//
+//        //2．通知チャネル登録
+//        val channelId = CHANNEL_ID
+//        val channelName = "TestService Channel"
+//        val channel = NotificationChannel(
+//            channelId, channelName,
+//            NotificationManager.IMPORTANCE_DEFAULT
+//        )
+//        val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+//        manager.createNotificationChannel(channel)
+//
+//        //4．通知の作成（ここでPendingIntentを通知領域に渡す）
+//        val notification = NotificationCompat.Builder(this, CHANNEL_ID )
+//            .setSmallIcon(R.drawable.ic_launcher_foreground)
+//            .setContentTitle("電波発生中")
+//            .setContentText("出てます出てます電波が出てます")
+//            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+//            .setContentIntent(openIntent)
+//            .build()
 
         setContent {
             StayWatchBeaconAndroidTheme {

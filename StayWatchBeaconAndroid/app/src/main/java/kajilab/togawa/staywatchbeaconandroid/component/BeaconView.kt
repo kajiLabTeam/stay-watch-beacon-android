@@ -96,10 +96,6 @@ fun BeaconView (viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient
             )
 
         // 下のエリア
-//        Button(onClick = {
-//        }) {
-//        }
-
         Column (
             modifier = Modifier
                 .padding(horizontal = 5.dp)
@@ -107,34 +103,70 @@ fun BeaconView (viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient
                 .background(Color.Gray.copy(alpha = 0.15f)),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            // 発信中・停止中の四角
-            AdvertiseStatusPanel(
-                textStr = if(viewModel.isAdvertising) "発信中" else "停止中",
-                panelColor = if(viewModel.isAdvertising) Color(0xFF007AFF) else Color(0xFFFF3B30),
-                textColor = Color.White
-            )
+            // メールアドレスが滞在ウォッチサーバーに登録されていない場合
+            if(viewModel.uuid == ""){
+                // 発信中・停止中の四角
+                AdvertiseStatusPanel(
+                    textStr = "未登録",
+                    panelColor = Color.Transparent,
+                    textColor = Color.Red,
+                    borderColor = Color.Red
+                )
+                // ユーザ名や同期ボタン、同期時刻
+                Text(
+                    text = viewModel.email + "は",
+                    fontSize = 16.sp,
+                    modifier = Modifier
+                        .padding(bottom = 5.dp)
+                )
+                Text(
+                    text = "未登録のメールアドレスです",
+                    fontSize = 16.sp,
+                    modifier = Modifier
+                        .padding(bottom = 15.dp)
+                )
 
-            // お試し
-            //Text(beaconStatus)
-            //Text(viewModel.beaconStatus)
+            } else if(!viewModel.isAndroidBeaconUUID(viewModel.uuid)){
+                // Androidビーコンとして登録されていない場合
+                // 発信中・停止中の四角
+                AdvertiseStatusPanel(
+                    textStr = "未登録",
+                    panelColor = Color.Transparent,
+                    textColor = Color.Red,
+                    borderColor = Color.Red
+                )
+                // ユーザ名や同期ボタン、同期時刻
+                Text(
+                    text = "Androidビーコンとして登録されていません",
+                    fontSize = 16.sp,
+                    modifier = Modifier
+                        .padding(bottom = 15.dp)
+                )
+            } else {
+                // 発信中・停止中の四角
+                AdvertiseStatusPanel(
+                    textStr = if (viewModel.isAdvertising) "発信中" else "停止中",
+                    panelColor = if (viewModel.isAdvertising) Color(0xFF007AFF) else Color(
+                        0xFFFF3B30
+                    ),
+                    textColor = Color.White,
+                    borderColor = Color.Transparent
+                )
 
-            // ユーザ名や同期ボタン、同期時刻
-            Text(
-                text = viewModel.userName,
-                fontSize = 20.sp,
-                modifier = Modifier
-                    .padding(bottom = 15.dp)
-            )
-            Text(
-                text = viewModel.uuid,
-                fontSize = 12.sp,
-                modifier = Modifier
-                    .padding(bottom = 25.dp)
-            )
-//            Icon(
-//                painter = rememberVectorPainter(image = Icons.Default.Star),
-//                contentDescription = null,
-//            )
+                // ユーザ名や同期ボタン、同期時刻
+                Text(
+                    text = viewModel.userName,
+                    fontSize = 20.sp,
+                    modifier = Modifier
+                        .padding(bottom = 15.dp)
+                )
+                Text(
+                    text = viewModel.uuid,
+                    fontSize = 12.sp,
+                    modifier = Modifier
+                        .padding(bottom = 25.dp)
+                )
+            }
             SyncButton(googleAuthUiClient = googleAuthClient, viewModel = viewModel, db = db, context = application, peripheralServiceManager = peripheralServerManager)
             Text(
                 text = "最新の同期：" + viewModel.latestSyncTime,
@@ -146,48 +178,50 @@ fun BeaconView (viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient
         }
 
         // 発信開始停止ボタン
-        if(viewModel.isAdvertising){
-            Button(
-                onClick = {
-                    Log.d("Button", "発信を停止")
-                    CoroutineScope(Dispatchers.IO).launch {
-                        viewModel.stopAdvertisingService(db, peripheralServerManager)
-                    }
-                          },
-                colors = ButtonDefaults.buttonColors(Color.Transparent)
-            ) {
-                Text(
-                    text="発信を停止する",
-                    color = Color.Gray
-                )
-            }
-        } else {
-            Button(
-                onClick = {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        val errorCode = viewModel.startAdvertisingService(db, peripheralServerManager)
-                        if(errorCode != null){
-                            when (errorCode) {
-                                statusCode.UNABLE_GET_USER_FROM_DATABASE -> {
-                                    withContext(Dispatchers.Main){
-                                        Toast.makeText(application, "発信開始失敗", Toast.LENGTH_SHORT).show()
+        if(viewModel.uuid != "" && viewModel.isAndroidBeaconUUID(viewModel.uuid)){
+            if(viewModel.isAdvertising){
+                Button(
+                    onClick = {
+                        Log.d("Button", "発信を停止")
+                        CoroutineScope(Dispatchers.IO).launch {
+                            viewModel.stopAdvertisingService(db, peripheralServerManager)
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(Color.Transparent)
+                ) {
+                    Text(
+                        text="発信を停止する",
+                        color = Color.Gray
+                    )
+                }
+            } else {
+                Button(
+                    onClick = {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            val errorCode = viewModel.startAdvertisingService(db, peripheralServerManager)
+                            if(errorCode != null){
+                                when (errorCode) {
+                                    statusCode.UNABLE_GET_USER_FROM_DATABASE -> {
+                                        withContext(Dispatchers.Main){
+                                            Toast.makeText(application, "発信開始失敗", Toast.LENGTH_SHORT).show()
+                                        }
                                     }
-                                }
-                                statusCode.INVALID_UUID -> {
-                                    withContext(Dispatchers.Main){
-                                        Toast.makeText(application, "発信開始失敗", Toast.LENGTH_SHORT).show()
+                                    statusCode.INVALID_UUID -> {
+                                        withContext(Dispatchers.Main){
+                                            Toast.makeText(application, "発信開始失敗", Toast.LENGTH_SHORT).show()
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                          },
-                colors = ButtonDefaults.buttonColors(Color.Transparent)
-            ) {
-                Text(
-                    text="発信を開始する",
-                    color = Color.Gray
-                )
+                    },
+                    colors = ButtonDefaults.buttonColors(Color.Transparent)
+                ) {
+                    Text(
+                        text="発信を開始する",
+                        color = Color.Gray
+                    )
+                }
             }
         }
     }
