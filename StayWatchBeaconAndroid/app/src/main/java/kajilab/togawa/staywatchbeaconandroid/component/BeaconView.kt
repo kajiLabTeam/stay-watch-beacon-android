@@ -2,6 +2,8 @@ package kajilab.togawa.staywatchbeaconandroid.component
 
 import android.content.Context
 import android.content.Intent
+import android.provider.Settings
+import android.provider.Settings.Global.AIRPLANE_MODE_ON
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
@@ -18,8 +20,10 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -142,22 +146,6 @@ fun BeaconView (viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient
                     modifier = Modifier
                         .padding(bottom = 15.dp)
                 )
-            } else if(viewModel.isAirplaneMode(application)){
-                // 機内モードの場合
-                // 発信中・停止中の四角
-                AdvertiseStatusPanel(
-                    textStr = "停止中",
-                    panelColor = Color.Green,
-                    textColor = Color.White,
-                    borderColor = Color.Transparent
-                )
-                // ユーザ名や同期ボタン、同期時刻
-                Text(
-                    text = "機内モード中は停止します",
-                    fontSize = 16.sp,
-                    modifier = Modifier
-                        .padding(bottom = 15.dp)
-                )
             } else {
                 // 発信中・停止中の四角
                 AdvertiseStatusPanel(
@@ -194,7 +182,7 @@ fun BeaconView (viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient
         }
 
         // 発信開始停止ボタン
-        if(viewModel.uuid != "" && viewModel.isAndroidBeaconUUID(viewModel.uuid) && !viewModel.isAirplaneMode(application)){
+        if(viewModel.uuid != "" && viewModel.isAndroidBeaconUUID(viewModel.uuid)){
             if(viewModel.isAdvertising){
                 Button(
                     onClick = {

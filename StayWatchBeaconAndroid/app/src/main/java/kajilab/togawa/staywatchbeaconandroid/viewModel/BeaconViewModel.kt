@@ -9,8 +9,10 @@ import android.widget.Toast
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat.startForegroundService
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.room.Room
@@ -87,12 +89,6 @@ class BeaconViewModel(): ViewModel() {
             isSignInSuccessful = result.data != null,
             signInError = result.errorMessage
         )}
-    }
-
-    fun isAirplaneMode(context: Context): Boolean {
-        val resultString = Settings.System.getString(context.contentResolver, AIRPLANE_MODE_ON)
-        // 0がOFF 1がON
-        return resultString == "1"
     }
 
     /**
