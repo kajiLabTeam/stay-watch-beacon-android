@@ -2,6 +2,8 @@ package kajilab.togawa.staywatchbeaconandroid.viewModel
 
 import android.content.Context
 import android.content.Intent
+import android.provider.Settings
+import android.provider.Settings.Global.AIRPLANE_MODE_ON
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.MutableState
@@ -85,6 +87,12 @@ class BeaconViewModel(): ViewModel() {
             isSignInSuccessful = result.data != null,
             signInError = result.errorMessage
         )}
+    }
+
+    fun isAirplaneMode(context: Context): Boolean {
+        val resultString = Settings.System.getString(context.contentResolver, AIRPLANE_MODE_ON)
+        // 0がOFF 1がON
+        return resultString == "1"
     }
 
     /**

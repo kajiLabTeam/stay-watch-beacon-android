@@ -142,6 +142,22 @@ fun BeaconView (viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient
                     modifier = Modifier
                         .padding(bottom = 15.dp)
                 )
+            } else if(viewModel.isAirplaneMode(application)){
+                // 機内モードの場合
+                // 発信中・停止中の四角
+                AdvertiseStatusPanel(
+                    textStr = "停止中",
+                    panelColor = Color.Green,
+                    textColor = Color.White,
+                    borderColor = Color.Transparent
+                )
+                // ユーザ名や同期ボタン、同期時刻
+                Text(
+                    text = "機内モード中は停止します",
+                    fontSize = 16.sp,
+                    modifier = Modifier
+                        .padding(bottom = 15.dp)
+                )
             } else {
                 // 発信中・停止中の四角
                 AdvertiseStatusPanel(
@@ -178,7 +194,7 @@ fun BeaconView (viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient
         }
 
         // 発信開始停止ボタン
-        if(viewModel.uuid != "" && viewModel.isAndroidBeaconUUID(viewModel.uuid)){
+        if(viewModel.uuid != "" && viewModel.isAndroidBeaconUUID(viewModel.uuid) && !viewModel.isAirplaneMode(application)){
             if(viewModel.isAdvertising){
                 Button(
                     onClick = {

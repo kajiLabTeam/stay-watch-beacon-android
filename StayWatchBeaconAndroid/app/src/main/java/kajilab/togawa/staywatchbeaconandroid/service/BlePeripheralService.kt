@@ -39,6 +39,9 @@ class BlePeripheralService: Service() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
 
+        // notificationManagerの初期化
+        notificationManager = NotificationManagerCompat.from(this)
+
         when(intent.action){
             Intent.ACTION_SEND -> {
                 if(intent.type == "text/plain"){
@@ -59,7 +62,8 @@ class BlePeripheralService: Service() {
                 setupService()
             }
         }
-        return START_STICKY
+
+        return START_NOT_STICKY
     }
 
     override fun onDestroy() {
@@ -117,6 +121,7 @@ class BlePeripheralService: Service() {
             peripheralServerManager.startAdvertising(advertisingUUID)
 
             //5. 通知の表示
+
             startForeground(1212, notification)
         }
     }

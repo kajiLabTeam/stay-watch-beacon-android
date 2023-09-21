@@ -1,5 +1,6 @@
 package kajilab.togawa.staywatchbeaconandroid.broadcast
 
+import android.app.ActivityManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -28,24 +29,41 @@ class BeaconBroadcastReceiver: BroadcastReceiver() {
                 if(isAirplaneModeOn) {
                     Log.d("Broadcast", "機内モードオン！")
 
-                    val targetIntent = bleIntent.apply {
-                        action = Intent.ACTION_SEND
-                        type = "text/plain"
-                        putExtra("tag", "air_on")
+                    if(isServiceRunning(application, BlePeripheralService::class.java)){
+                        Log.d("Broadcast", "サービスは動いているよ")
+                        val targetIntent = bleIntent.apply {
+                            action = Intent.ACTION_SEND
+                            type = "text/plain"
+                            putExtra("tag", "air_on")
+                        }
+                        startForegroundService(application, targetIntent)
                     }
-                    startForegroundService(application, targetIntent)
                 } else {
                     Log.d("Broadcast", "機内モードオフ！")
 
-                    val targetIntent = bleIntent.apply {
-                        action = Intent.ACTION_SEND
-                        type = "text/plain"
-                        putExtra("tag", "air_off")
+                    if(isServiceRunning(application, BlePeripheralService::class.java)){
+                        Log.d("Broadcast", "サービスは動いているよ")
+                        val targetIntent = bleIntent.apply {
+                            action = Intent.ACTION_SEND
+                            type = "text/plain"
+                            putExtra("tag", "air_off")
+                        }
+                        startForegroundService(application, targetIntent)
                     }
-                    startForegroundService(application, targetIntent)
                 }
             }
 
         }
+    }
+
+    private fun isServiceRunning(context: Context, serviceClass:Class<*>): Boolean {
+        val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val services = activityManager.getRunningServices(Int.MAX_VALUE)
+        for (service in services) {
+            if(serviceClass.name == service.service.className) {
+                return true
+            }
+        }
+        return false
     }
 }
