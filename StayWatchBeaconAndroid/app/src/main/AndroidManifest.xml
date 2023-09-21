@@ -26,20 +26,27 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.StayWatchBeaconAndroid"
         tools:targetApi="31">
+
         <receiver
             android:name=".broadcast.BeaconBroadcastReceiver"
             android:directBootAware="true"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.AIRPLANE_MODE"/>
+
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/*" />
             </intent-filter>
         </receiver>
+
         <service
             android:name=".service.BlePeripheralService"
             android:enabled="true"
-            android:exported="false"
-            android:directBootAware="true">
-        </service>
+            android:exported="true"
+            android:directBootAware="true"/>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -51,6 +58,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
     </application>
 
 </manifest>

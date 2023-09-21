@@ -34,8 +34,43 @@ class BlePeripheralService: Service() {
     private val peripheralServerManager = BlePeripheralServerManager(this)
 
     @RequiresApi(Build.VERSION_CODES.O)
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
 
+        when(intent.action){
+            Intent.ACTION_SEND -> {
+                if(intent.type == "text/plain"){
+                    when(intent.getStringExtra("tag")){
+                        "air_on" -> {
+                            Log.d("Service", "機内モードONのアクションを受け取ったよ")
+                            testOnAirPlain()
+                        }
+                        "air_off" -> {
+                            Log.d("Service", "機内モードOFFのアクションを受け取ったよ")
+                            testOffAirPlain()
+                        }
+                    }
+                }
+            }
+            else -> {
+                // 初期実行
+                setupService()
+            }
+        }
+        return START_STICKY
+    }
+
+    override fun onDestroy() {
+        Log.d("Service", "サービスが終了")
+        //val peripheralManager = BlePeripheralServerManager(this)
+        peripheralServerManager.clear()
+        super.onDestroy()
+    }
+
+    override fun onBind(intent: Intent?): IBinder? {
+        return null
+    }
+
+    private fun setupService() {
         Log.d("Service", "スタートアップサービスが起動")
 
         // ROOMでデータベースの立ち上げ
@@ -53,6 +88,8 @@ class BlePeripheralService: Service() {
             .setName("滞在ウォッチ動作中")
             .build()
         manager.createNotificationChannel(channel)
+
+        //manager.notify(CHANNEL_ID, 新しいnotification)
 
         // アクティビティを起動するIntentを作成
         val openIntent = Intent(this, MainActivity::class.java).let {
@@ -79,18 +116,16 @@ class BlePeripheralService: Service() {
             //5. 通知の表示
             startForeground(1212, notification)
         }
-        return START_STICKY
     }
 
-    override fun onDestroy() {
-        Log.d("Service", "サービスが終了")
-        //val peripheralManager = BlePeripheralServerManager(this)
-        peripheralServerManager.clear()
-        super.onDestroy()
+    fun testOnAirPlain() {
+        Log.d("Service", "機内モードオンになったよ")
+        Log.d("Service", "アドバタイズ一時中断するよ")
     }
 
-    override fun onBind(intent: Intent?): IBinder? {
-        return null
+    fun testOffAirPlain() {
+        Log.d("Service", "機内モードオフになったよ")
+        Log.d("Service", "アドバタイズ再開するよ")
     }
 
 }

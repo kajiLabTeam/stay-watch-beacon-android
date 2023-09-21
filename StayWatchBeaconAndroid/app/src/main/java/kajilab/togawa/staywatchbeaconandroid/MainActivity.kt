@@ -9,8 +9,11 @@ import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattServer
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.BluetoothLeAdvertiser
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.net.ConnectivityManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -38,6 +41,7 @@ import com.google.firebase.auth.FirebaseAuth
 import kajilab.togawa.staywatchbeaconandroid.component.SignInView
 import kajilab.togawa.staywatchbeaconandroid.model.BlePeripheralServerManager
 import kajilab.togawa.staywatchbeaconandroid.api.GoogleAuthUiClient
+import kajilab.togawa.staywatchbeaconandroid.broadcast.BeaconBroadcastReceiver
 import kajilab.togawa.staywatchbeaconandroid.component.BeaconView
 import kajilab.togawa.staywatchbeaconandroid.db.AppDatabase
 import kajilab.togawa.staywatchbeaconandroid.ui.theme.StayWatchBeaconAndroidTheme
@@ -95,7 +99,9 @@ class MainActivity : ComponentActivity() {
             applicationContext,
             AppDatabase::class.java,
             "beacon_database"
-        ).build()
+        )
+            .fallbackToDestructiveMigration()
+            .build()
 
         // viewModelのステートにデータベースからのユーザ情報を入れる
         CoroutineScope(Dispatchers.IO).launch {
@@ -134,6 +140,14 @@ class MainActivity : ComponentActivity() {
 
         bleManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         bleAdapter = bleManager.getAdapter()
+
+        // BroadcastReceiverを登録
+        val br: BroadcastReceiver = BeaconBroadcastReceiver()
+        val intentFilter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION).apply {
+            addAction(Intent.ACTION_AIRPLANE_MODE_CHANGED)
+        }
+        registerReceiver(br, intentFilter)
+
 
         // 通知関連
 //        val CHANNEL_ID = "stay6000"
