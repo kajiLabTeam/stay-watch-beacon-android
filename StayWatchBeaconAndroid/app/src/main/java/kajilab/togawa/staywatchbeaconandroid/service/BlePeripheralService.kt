@@ -1,5 +1,6 @@
 package kajilab.togawa.staywatchbeaconandroid.service
 
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -32,6 +33,8 @@ class BlePeripheralService: Service() {
     }
 
     private val peripheralServerManager = BlePeripheralServerManager(this)
+
+    private lateinit var notificationManager: NotificationManagerCompat
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
@@ -80,14 +83,14 @@ class BlePeripheralService: Service() {
             "beacon_database"
         ).build()
 
-        val manager = NotificationManagerCompat.from(this)
+        notificationManager = NotificationManagerCompat.from(this)
         val channel = NotificationChannelCompat.Builder(
             CHANNEL_ID,
             NotificationManagerCompat.IMPORTANCE_DEFAULT
         )
             .setName("滞在ウォッチ動作中")
             .build()
-        manager.createNotificationChannel(channel)
+        notificationManager.createNotificationChannel(channel)
 
         //manager.notify(CHANNEL_ID, 新しいnotification)
 
@@ -118,14 +121,51 @@ class BlePeripheralService: Service() {
         }
     }
 
-    fun testOnAirPlain() {
-        Log.d("Service", "機内モードオンになったよ")
-        Log.d("Service", "アドバタイズ一時中断するよ")
+    private fun updateNotification(title: String, content: String) {
+        // アクティビティを起動するIntentを作成
+        val openIntent = Intent(this, MainActivity::class.java).let {
+            PendingIntent.getActivity(this, 0, it, PendingIntent.FLAG_IMMUTABLE)
+        }
+
+        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentTitle(title)
+            .setContentText(content)
+            .setContentIntent(openIntent)
+            .setOngoing(true)
+            .build()
+
+        notificationManager.notify(1212, notification)
     }
 
-    fun testOffAirPlain() {
+    private fun testOnAirPlain() {
+        Log.d("Service", "機内モードオンになったよ")
+        Log.d("Service", "アドバタイズ一時中断するよ")
+
+        peripheralServerManager.clear()
+        updateNotification("滞在ウォッチ停止中", "機内モードをオフにすると再開します")
+    }
+
+    private fun testOffAirPlain() {
         Log.d("Service", "機内モードオフになったよ")
         Log.d("Service", "アドバタイズ再開するよ")
+
+        CoroutineScope(Dispatchers.IO).launch {
+            val db = Room.databaseBuilder(
+                this@BlePeripheralService,
+                AppDatabase::class.java,
+                "beacon_database"
+            ).build()
+
+            val advertisingUUID = peripheralServerManager.getAdvertisingUUID(db)
+            if(advertisingUUID == null){
+                // UUIDが正しくない場合
+                return@launch
+            }
+            Thread.sleep(10000) // onBluetoothServiceUpするのに10秒はかからないため
+            peripheralServerManager.startAdvertising(advertisingUUID)
+        }
+        updateNotification("滞在ウォッチ動作中", "ビーコンアプリが動作中です")
     }
 
 }
