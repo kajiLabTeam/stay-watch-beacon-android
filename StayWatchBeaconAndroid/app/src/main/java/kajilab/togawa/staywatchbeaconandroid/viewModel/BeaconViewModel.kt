@@ -46,7 +46,7 @@ class BeaconViewModel(): ViewModel() {
     private val count = MutableLiveData(0)
     var beaconStatus:String by mutableStateOf("停止中")
     //var isAdvertising = MutableLiveData(false)
-    var isLoading by mutableStateOf(true)
+    var isLoading by mutableStateOf(false)
 
     private val statusCode = StatusCode
 

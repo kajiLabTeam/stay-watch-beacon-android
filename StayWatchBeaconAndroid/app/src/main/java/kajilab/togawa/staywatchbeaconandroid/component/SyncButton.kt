@@ -51,7 +51,7 @@ fun SyncButton(googleAuthUiClient: GoogleAuthUiClient, viewModel: BeaconViewMode
                             )
                             viewModel.onSignInResult(signInResult)
                             Log.d("MainActivity", "RESULT_OKだったよ")
-                            Log.d("MainActivity", "signInResult: " + signInResult.toString())
+                            Log.d("MainActivity", "signInResult: $signInResult")
                             // viewModelのメソッドへトークンとメールアドレスを渡してデータベース関連とBLEサービス開始処理を行う
                             viewModel.signInUser(signInResult.data?.email, signInResult.data?.token.toString(), db, context, peripheralServiceManager)
                         }
@@ -61,6 +61,7 @@ fun SyncButton(googleAuthUiClient: GoogleAuthUiClient, viewModel: BeaconViewMode
             )
 
             Button(onClick = {
+                viewModel.isLoading = true
                 Log.d("SyncButton", "SignInScreen開始")
                 Toast.makeText(context, "同期開始", Toast.LENGTH_SHORT).show()
                 CoroutineScope(Dispatchers.IO).launch {
@@ -101,6 +102,7 @@ fun SyncButton(googleAuthUiClient: GoogleAuthUiClient, viewModel: BeaconViewMode
                         }
                     }
                     Log.d("SignInScreen", "同期ボタンが押されたよ")
+                    viewModel.isLoading = false
                 }
             },
                 //colors = ButtonDefaults.buttonColors(Color(0xFFF8CC45))

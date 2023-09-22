@@ -74,9 +74,11 @@ fun BeaconView (viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient
             ){
                 Button(
                     onClick = {
+                        viewModel.isLoading = true
                         Log.d("Button", "サインアウト！")
                         CoroutineScope(Dispatchers.IO).launch {
                             viewModel.signOut(db, application, peripheralServerManager)
+                            viewModel.isLoading = false
                         }
                               },
                     colors = ButtonDefaults.buttonColors(
@@ -190,9 +192,11 @@ fun BeaconView (viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient
             if(viewModel.isAdvertising){
                 Button(
                     onClick = {
+                        viewModel.isLoading = true
                         Log.d("Button", "発信を停止")
                         CoroutineScope(Dispatchers.IO).launch {
                             viewModel.stopAdvertisingService(db, peripheralServerManager, application)
+                            viewModel.isLoading = false
                         }
                     },
                     colors = ButtonDefaults.buttonColors(Color.Transparent)
@@ -205,6 +209,7 @@ fun BeaconView (viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient
             } else {
                 Button(
                     onClick = {
+                        viewModel.isLoading = true
                         CoroutineScope(Dispatchers.IO).launch {
                             val errorCode = viewModel.startAdvertisingService(db, peripheralServerManager, application)
                             if(errorCode != null){
@@ -221,6 +226,7 @@ fun BeaconView (viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient
                                     }
                                 }
                             }
+                            viewModel.isLoading = false
                         }
                     },
                     colors = ButtonDefaults.buttonColors(Color.Transparent)

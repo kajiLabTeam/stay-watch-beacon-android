@@ -82,6 +82,11 @@ fun SignInButton(googleAuthUiClient: GoogleAuthUiClient, viewModel: BeaconViewMo
             )
 
             Button(onClick = {
+                        if(viewModel.isLoading){
+                            Log.d("SignInButton", "ローディング中だから少し待ってね")
+                            return@Button
+                        }
+                        viewModel.isLoading = true
                         Log.d("MainActivity", "SignInScreen開始")
                         CoroutineScope(Dispatchers.IO).launch {
                             val signInIntentSender = googleAuthUiClient.signIn()
@@ -91,6 +96,7 @@ fun SignInButton(googleAuthUiClient: GoogleAuthUiClient, viewModel: BeaconViewMo
                                 ).build()
                             )
                             Log.d("SignInScreen", "サインインボタンが押されたよ")
+                            viewModel.isLoading = false
                         }
                     },
                     colors = ButtonDefaults.buttonColors(Color(0xFFF8CC45))
