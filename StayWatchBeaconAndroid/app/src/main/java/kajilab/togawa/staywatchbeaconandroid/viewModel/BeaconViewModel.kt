@@ -6,11 +6,13 @@ import android.provider.Settings
 import android.provider.Settings.Global.AIRPLANE_MODE_ON
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import androidx.core.content.ContextCompat.startForegroundService
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -89,6 +91,18 @@ class BeaconViewModel(): ViewModel() {
             isSignInSuccessful = result.data != null,
             signInError = result.errorMessage
         )}
+    }
+
+    fun getColorByTheme(colorInLightTheme: Color, isDarkTheme: Boolean): Color{
+        Log.d("ViewModel", "ダークモードですか $isDarkTheme")
+        if(isDarkTheme){
+            Log.d("ViewModel", "ダークモードだよ")
+            when(colorInLightTheme){
+                Color.White -> return Color.Black
+                Color.Black -> return Color.White
+            }
+        }
+        return colorInLightTheme
     }
 
     /**

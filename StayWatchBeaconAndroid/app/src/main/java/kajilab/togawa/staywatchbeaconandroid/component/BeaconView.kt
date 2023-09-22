@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -48,6 +49,7 @@ import java.util.UUID
 @Composable
 fun BeaconView (viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient, peripheralServerManager: BlePeripheralServerManager, application: Context, db: AppDatabase) {
     val statusCode = StatusCode
+    val isDarkTheme = isSystemInDarkTheme()
 
     Column(
         modifier = Modifier
@@ -65,7 +67,7 @@ fun BeaconView (viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient
             Text(
                 text = viewModel.communityName,
                 fontWeight = FontWeight.Bold,
-                fontSize = 20.sp
+                fontSize = 20.sp,
             )
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -77,13 +79,15 @@ fun BeaconView (viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient
                             viewModel.signOut(db, application, peripheralServerManager)
                         }
                               },
-                    colors = ButtonDefaults.buttonColors(Color.Transparent),
+                    colors = ButtonDefaults.buttonColors(
+                        Color.Transparent,
+                        contentColor = viewModel.getColorByTheme(Color.Black, isDarkTheme)
+                    ),
                     border = BorderStroke(3.dp, Color(0xFFF8CC45))
                 ) {
                     Text(
                         text="サインアウト",
                         fontSize = 12.sp,
-                        color = Color.Black
                     )
                 }
                 Text(
