@@ -189,16 +189,18 @@ class BeaconViewModel(): ViewModel() {
         val stayWatchClient = StayWatchClient()
         val user = stayWatchClient.getUserFromServer(token)
         if(user.errorMessage != null){
-            // サーバーからユーザを取得するのが失敗したときの処理
-            dao.createUser(DBUser(
-                id = 1,
-                name = null,
-                uuid = null,
-                email = gmail,
-                communityName = null,
-                latestSyncTime = latestSyncTime,
-                isAllowedAdvertising = false
-            ))
+            if(user.errorStatus != statusCode.NO_NETWORK_CONNECTION){
+                // サーバーからユーザを取得するのが失敗したときの処理
+                dao.createUser(DBUser(
+                    id = 1,
+                    name = null,
+                    uuid = null,
+                    email = gmail,
+                    communityName = null,
+                    latestSyncTime = latestSyncTime,
+                    isAllowedAdvertising = false
+                ))
+            }
             // UIに反映
             email = gmail
             print(user.errorMessage)
