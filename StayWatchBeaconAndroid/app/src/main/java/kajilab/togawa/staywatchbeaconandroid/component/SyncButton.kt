@@ -61,6 +61,9 @@ fun SyncButton(googleAuthUiClient: GoogleAuthUiClient, viewModel: BeaconViewMode
             )
 
             Button(onClick = {
+                if(viewModel.isLoading){
+                    return@Button
+                }
                 viewModel.isLoading = true
                 Log.d("SyncButton", "SignInScreen開始")
                 Toast.makeText(context, "同期開始", Toast.LENGTH_SHORT).show()
