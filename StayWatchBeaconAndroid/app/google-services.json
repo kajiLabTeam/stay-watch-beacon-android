@@ -1,0 +1,166 @@
+{
+  "project_info": {
+    "project_number": "768306004606",
+    "project_id": "stay-watch-a616f",
+    "storage_bucket": "stay-watch-a616f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:768306004606:android:64005c6458d569692b8e2f",
+        "android_client_info": {
+          "package_name": "com.kameda.firebaseauth"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "768306004606-1a42i6r8r7f9tgaeie2o4i2br6vdh1jb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.kameda.firebaseauth",
+            "certificate_hash": "94a7d17a58d5600beb34e241b2e4d465b04edaa4"
+          }
+        },
+        {
+          "client_id": "768306004606-55ljrupn0fk4mvb7kbeg83njiuc6cvjs.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.kameda.firebaseauth",
+            "certificate_hash": "7334ae986350f2586a38a2c25a5b88e59469e389"
+          }
+        },
+        {
+          "client_id": "768306004606-i3tht9s6nvj9m8q6l2m10mq43kuip8ds.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.kameda.firebaseauth",
+            "certificate_hash": "80231e9f9f92d6b382a57d520613e340bf239a82"
+          }
+        },
+        {
+          "client_id": "768306004606-47j4ig1a1iuq0jlje6cudeo5i7nihlna.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCR0zVUeBDbYc1uRZN1V-VxNwjf4NOYuQs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "768306004606-47j4ig1a1iuq0jlje6cudeo5i7nihlna.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "768306004606-5d4fo02d3t9ckp689655057to67iucrb.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.togawakouta.StayWatchBeaconiOS"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:768306004606:android:99a11f9a5fdeb6d82b8e2f",
+        "android_client_info": {
+          "package_name": "kajilab.togawa.staywatchbeaconandroid"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "768306004606-47j4ig1a1iuq0jlje6cudeo5i7nihlna.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCR0zVUeBDbYc1uRZN1V-VxNwjf4NOYuQs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "768306004606-47j4ig1a1iuq0jlje6cudeo5i7nihlna.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "768306004606-5d4fo02d3t9ckp689655057to67iucrb.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.togawakouta.StayWatchBeaconiOS"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:768306004606:android:6ddd11306fe4c4f32b8e2f",
+        "android_client_info": {
+          "package_name": "toyama.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "768306004606-jc2bp6l516hfjvl6jdgilii5otb2a9jd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "toyama.app",
+            "certificate_hash": "94a7d17a58d5600beb34e241b2e4d465b04edaa4"
+          }
+        },
+        {
+          "client_id": "768306004606-qe5p972r6h7jjvhhqr1bfffaofg48p8f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "toyama.app",
+            "certificate_hash": "7334ae986350f2586a38a2c25a5b88e59469e389"
+          }
+        },
+        {
+          "client_id": "768306004606-qv7b04fe6c6nomgasftg8u68kt6ssa6o.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "toyama.app",
+            "certificate_hash": "80231e9f9f92d6b382a57d520613e340bf239a82"
+          }
+        },
+        {
+          "client_id": "768306004606-47j4ig1a1iuq0jlje6cudeo5i7nihlna.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCR0zVUeBDbYc1uRZN1V-VxNwjf4NOYuQs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "768306004606-47j4ig1a1iuq0jlje6cudeo5i7nihlna.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "768306004606-5d4fo02d3t9ckp689655057to67iucrb.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.togawakouta.StayWatchBeaconiOS"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
