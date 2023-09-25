@@ -37,10 +37,16 @@ class BlePeripheralService: Service() {
     private lateinit var notificationManager: NotificationManagerCompat
 
     @RequiresApi(Build.VERSION_CODES.O)
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
         // notificationManagerの初期化
         notificationManager = NotificationManagerCompat.from(this)
+
+        // サービスが強制終了されて再起動する場合
+        if(intent == null){
+            setupService()
+            return START_STICKY
+        }
 
         when(intent.action){
             Intent.ACTION_SEND -> {
@@ -55,6 +61,9 @@ class BlePeripheralService: Service() {
                             testOffAirPlain()
                         }
                     }
+                } else if(intent.type == "text/screen_on"){
+                    Log.d("Service", "スクリーンオンのアクションを受け取ったよ")
+                    setupService()
                 }
             }
             else -> {
@@ -63,7 +72,7 @@ class BlePeripheralService: Service() {
             }
         }
 
-        return START_NOT_STICKY
+        return START_STICKY
     }
 
     override fun onDestroy() {
@@ -104,7 +113,7 @@ class BlePeripheralService: Service() {
         }
 
         val notification = NotificationCompat.Builder(this, channel.id)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.staywatch)
             .setContentTitle("滞在ウォッチ動作中")
             .setContentText("ビーコンアプリが動作中です")
             .setContentIntent(openIntent)
@@ -121,7 +130,6 @@ class BlePeripheralService: Service() {
             peripheralServerManager.startAdvertising(advertisingUUID)
 
             //5. 通知の表示
-
             startForeground(1212, notification)
         }
     }
@@ -133,7 +141,7 @@ class BlePeripheralService: Service() {
         }
 
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.forward_circle)
             .setContentTitle(title)
             .setContentText(content)
             .setContentIntent(openIntent)

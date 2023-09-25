@@ -145,6 +145,7 @@ class MainActivity : ComponentActivity() {
         val br: BroadcastReceiver = BeaconBroadcastReceiver()
         val intentFilter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION).apply {
             addAction(Intent.ACTION_AIRPLANE_MODE_CHANGED)
+            addAction(Intent.ACTION_SCREEN_ON)
         }
         registerReceiver(br, intentFilter)
 
