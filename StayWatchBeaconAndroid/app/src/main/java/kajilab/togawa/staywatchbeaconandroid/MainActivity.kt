@@ -17,6 +17,7 @@ import android.net.ConnectivityManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -41,6 +42,7 @@ import com.google.firebase.auth.FirebaseAuth
 import kajilab.togawa.staywatchbeaconandroid.component.SignInView
 import kajilab.togawa.staywatchbeaconandroid.model.BlePeripheralServerManager
 import kajilab.togawa.staywatchbeaconandroid.api.GoogleAuthUiClient
+import kajilab.togawa.staywatchbeaconandroid.api.StayWatchClient
 import kajilab.togawa.staywatchbeaconandroid.broadcast.BeaconBroadcastReceiver
 import kajilab.togawa.staywatchbeaconandroid.component.BeaconView
 import kajilab.togawa.staywatchbeaconandroid.db.AppDatabase
@@ -52,7 +54,7 @@ import kotlinx.coroutines.launch
 import pub.devrel.easypermissions.EasyPermissions
 
 
-class MainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity(), EasyPermissions.PermissionCallbacks {
     private val PERMISSION_REQUEST_CODE = 1
 
 
@@ -84,7 +86,12 @@ class MainActivity : ComponentActivity() {
         )
     }
 
+    // ブロードキャストレシーバー
+    private val br: BroadcastReceiver = BeaconBroadcastReceiver()
+
+
     @RequiresApi(Build.VERSION_CODES.O)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -102,6 +109,8 @@ class MainActivity : ComponentActivity() {
         )
             .fallbackToDestructiveMigration()
             .build()
+
+
 
         // GoogleSignInClientの初期化
         //googleSignInClient = GoogleSignIn.getClient(this, gso)
@@ -137,7 +146,6 @@ class MainActivity : ComponentActivity() {
         bleAdapter = bleManager.getAdapter()
 
         // BroadcastReceiverを登録
-        val br: BroadcastReceiver = BeaconBroadcastReceiver()
         val intentFilter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION).apply {
             addAction(Intent.ACTION_AIRPLANE_MODE_CHANGED)
         }
@@ -147,33 +155,6 @@ class MainActivity : ComponentActivity() {
         CoroutineScope(Dispatchers.IO).launch {
             viewModel.startViewModel(db, application)
         }
-
-
-        // 通知関連
-//        val CHANNEL_ID = "stay6000"
-//        //1．通知領域タップで戻ってくる先のActivity
-//        val openIntent = Intent(this, MainActivity::class.java).let {
-//            PendingIntent.getActivity(this, 0, it, PendingIntent.FLAG_IMMUTABLE)
-//        }
-//
-//        //2．通知チャネル登録
-//        val channelId = CHANNEL_ID
-//        val channelName = "TestService Channel"
-//        val channel = NotificationChannel(
-//            channelId, channelName,
-//            NotificationManager.IMPORTANCE_DEFAULT
-//        )
-//        val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-//        manager.createNotificationChannel(channel)
-//
-//        //4．通知の作成（ここでPendingIntentを通知領域に渡す）
-//        val notification = NotificationCompat.Builder(this, CHANNEL_ID )
-//            .setSmallIcon(R.drawable.ic_launcher_foreground)
-//            .setContentTitle("電波発生中")
-//            .setContentText("出てます出てます電波が出てます")
-//            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-//            .setContentIntent(openIntent)
-//            .build()
 
         setContent {
             StayWatchBeaconAndroidTheme {
@@ -195,6 +176,25 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterReceiver(br)
+    }
+
+    override fun onPermissionsGranted(requestCode: Int, list: List<String>) {
+        // ユーザーの許可が得られたときに呼び出される
+        Log.d("Permission", "権限許可された")
+        recreate()
+    }
+
+    override fun onPermissionsDenied(requestCode: Int, perms: MutableList<String>) {
+        Log.d("Permission", "権限許可されなかった")
+        CoroutineScope(Dispatchers.IO).launch {
+            Toast.makeText(application, "権限を全て許可してください", Toast.LENGTH_SHORT).show()
+        }
+        finish()
     }
 
 //    private fun signIn() {

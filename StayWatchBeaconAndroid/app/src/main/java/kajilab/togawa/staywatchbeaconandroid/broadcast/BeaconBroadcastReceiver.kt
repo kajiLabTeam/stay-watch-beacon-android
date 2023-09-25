@@ -1,6 +1,8 @@
 package kajilab.togawa.staywatchbeaconandroid.broadcast
 
 import android.app.ActivityManager
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothAdapter.STATE_OFF
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -29,35 +31,35 @@ class BeaconBroadcastReceiver: BroadcastReceiver() {
                 startForegroundService(application, bleIntent)
             }
 
-            Intent.ACTION_AIRPLANE_MODE_CHANGED -> {
-                val bleIntent = Intent(application, BlePeripheralService::class.java)
-                val isAirplaneModeOn = intent.getBooleanExtra("state", false)
-                if(isAirplaneModeOn) {
-                    Log.d("Broadcast", "機内モードオン！")
-
-                    if(isServiceRunning(application, BlePeripheralService::class.java)){
-                        Log.d("Broadcast", "サービスは動いているよ")
-                        val targetIntent = bleIntent.apply {
-                            action = Intent.ACTION_SEND
-                            type = "text/plain"
-                            putExtra("tag", "air_on")
-                        }
-                        startForegroundService(application, targetIntent)
-                    }
-                } else {
-                    Log.d("Broadcast", "機内モードオフ！")
-
-                    if(isServiceRunning(application, BlePeripheralService::class.java)){
-                        Log.d("Broadcast", "サービスは動いているよ")
-                        val targetIntent = bleIntent.apply {
-                            action = Intent.ACTION_SEND
-                            type = "text/plain"
-                            putExtra("tag", "air_off")
-                        }
-                        startForegroundService(application, targetIntent)
-                    }
-                }
-            }
+//            Intent.ACTION_AIRPLANE_MODE_CHANGED -> {
+//                val bleIntent = Intent(application, BlePeripheralService::class.java)
+//                val isAirplaneModeOn = intent.getBooleanExtra("state", false)
+//                if(isAirplaneModeOn) {
+//                    Log.d("Broadcast", "機内モードオン！")
+//
+//                    if(isServiceRunning(application, BlePeripheralService::class.java)){
+//                        Log.d("Broadcast", "サービスは動いているよ")
+//                        val targetIntent = bleIntent.apply {
+//                            action = Intent.ACTION_SEND
+//                            type = "text/plain"
+//                            putExtra("tag", "air_on")
+//                        }
+//                        startForegroundService(application, targetIntent)
+//                    }
+//                } else {
+//                    Log.d("Broadcast", "機内モードオフ！")
+//
+//                    if(isServiceRunning(application, BlePeripheralService::class.java)){
+//                        Log.d("Broadcast", "サービスは動いているよ")
+//                        val targetIntent = bleIntent.apply {
+//                            action = Intent.ACTION_SEND
+//                            type = "text/plain"
+//                            putExtra("tag", "air_off")
+//                        }
+//                        startForegroundService(application, targetIntent)
+//                    }
+//                }
+//            }
 
         }
     }

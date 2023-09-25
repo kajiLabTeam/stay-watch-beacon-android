@@ -5,7 +5,11 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.bluetooth.BluetoothAdapter
+import android.content.BroadcastReceiver
 import android.content.Intent
+import android.content.IntentFilter
+import android.net.ConnectivityManager
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
@@ -17,6 +21,8 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.room.Room
 import kajilab.togawa.staywatchbeaconandroid.MainActivity
 import kajilab.togawa.staywatchbeaconandroid.R
+import kajilab.togawa.staywatchbeaconandroid.broadcast.BeaconBroadcastReceiver
+import kajilab.togawa.staywatchbeaconandroid.broadcast.BluetoothStateBroadcastReceiver
 import kajilab.togawa.staywatchbeaconandroid.db.AppDatabase
 import kajilab.togawa.staywatchbeaconandroid.model.BlePeripheralServerManager
 import kotlinx.coroutines.CoroutineScope
@@ -36,6 +42,17 @@ class BlePeripheralService: Service() {
 
     private lateinit var notificationManager: NotificationManagerCompat
 
+    override fun onCreate() {
+        super.onCreate()
+        // BroadcastReceiverを登録
+        val broadcastReceiver = BluetoothStateBroadcastReceiver()
+        val intentFilter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION).apply {
+            addAction(BluetoothAdapter.ACTION_STATE_CHANGED)
+        }
+        registerReceiver(broadcastReceiver, intentFilter)
+    }
+
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
@@ -50,15 +67,15 @@ class BlePeripheralService: Service() {
 
         when(intent.action){
             Intent.ACTION_SEND -> {
-                if(intent.type == "text/plain"){
-                    when(intent.getStringExtra("tag")){
-                        "air_on" -> {
-                            Log.d("Service", "機内モードONのアクションを受け取ったよ")
-                            testOnAirPlain()
+                if(intent.type == "text/bluetooth"){
+                    when(intent.getStringExtra("state")){
+                        "on" -> {
+                            Log.d("Service", "Bluetoothオンを受け取ったよ")
+                            onBluetooth()
                         }
-                        "air_off" -> {
-                            Log.d("Service", "機内モードOFFのアクションを受け取ったよ")
-                            testOffAirPlain()
+                        "off" -> {
+                            Log.d("Service", "Bluetoothオフを受け取ったよ")
+                            offBluetooth()
                         }
                     }
                 }
@@ -138,7 +155,7 @@ class BlePeripheralService: Service() {
         }
 
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.drawable.forward_circle)
+            .setSmallIcon(R.drawable.staywatch)
             .setContentTitle(title)
             .setContentText(content)
             .setContentIntent(openIntent)
@@ -148,17 +165,15 @@ class BlePeripheralService: Service() {
         notificationManager.notify(1212, notification)
     }
 
-    private fun testOnAirPlain() {
-        Log.d("Service", "機内モードオンになったよ")
-        Log.d("Service", "アドバタイズ一時中断するよ")
+    private fun offBluetooth() {
+        Log.d("Service", "Bluetoothオフになったよ")
 
         peripheralServerManager.clear()
-        updateNotification("滞在ウォッチ停止中", "機内モードをオフにすると再開します")
+        updateNotification("滞在ウォッチ停止中", "Bluetoothをオンにすると再開します")
     }
 
-    private fun testOffAirPlain() {
-        Log.d("Service", "機内モードオフになったよ")
-        Log.d("Service", "アドバタイズ再開するよ")
+    private fun onBluetooth(){
+        Log.d("Service", "Bluetoothオンになったよ")
 
         CoroutineScope(Dispatchers.IO).launch {
             val db = Room.databaseBuilder(
@@ -172,7 +187,6 @@ class BlePeripheralService: Service() {
                 // UUIDが正しくない場合
                 return@launch
             }
-            Thread.sleep(10000) // onBluetoothServiceUpするのに10秒はかからないため
             peripheralServerManager.startAdvertising(advertisingUUID)
         }
         updateNotification("滞在ウォッチ動作中", "ビーコンアプリが動作中です")
