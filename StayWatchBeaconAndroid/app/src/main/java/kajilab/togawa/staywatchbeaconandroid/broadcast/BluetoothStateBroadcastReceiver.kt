@@ -13,8 +13,8 @@ class BluetoothStateBroadcastReceiver: BroadcastReceiver() {
         when(intent?.action){
 
             BluetoothAdapter.ACTION_STATE_CHANGED -> {
-                Log.d("Broadcast", "ブルーツースかわっったよー")
-                Log.d("Broadcast", BluetoothAdapter.EXTRA_STATE)
+                //Log.d("Broadcast", "ブルーツースかわっったよー")
+                //Log.d("Broadcast", BluetoothAdapter.EXTRA_STATE)
 
                 val bleIntent = Intent(application, BlePeripheralService::class.java)
 

@@ -78,7 +78,7 @@ fun BeaconView (viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient
                             return@Button
                         }
                         viewModel.isLoading = true
-                        Log.d("Button", "サインアウト！")
+                        //Log.d("Button", "サインアウト！")
                         CoroutineScope(Dispatchers.IO).launch {
                             viewModel.signOut(db, application, peripheralServerManager)
                             viewModel.isLoading = false
@@ -199,7 +199,7 @@ fun BeaconView (viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient
                             return@Button
                         }
                         viewModel.isLoading = true
-                        Log.d("Button", "発信を停止")
+                        //Log.d("Button", "発信を停止")
                         CoroutineScope(Dispatchers.IO).launch {
                             viewModel.stopAdvertisingService(db, peripheralServerManager, application)
                             viewModel.isLoading = false

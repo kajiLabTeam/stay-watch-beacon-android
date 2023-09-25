@@ -29,7 +29,7 @@ class GoogleAuthUiClient(
     // サインイン画面が出る
     suspend fun signIn(): IntentSender? {
 //    suspend fun signIn(): String {
-        Log.d("FirebaseAuth", "signIn開始")
+        //Log.d("FirebaseAuth", "signIn開始")
         val result = try {
             oneTapClient.beginSignIn(
                 buildSignInRequest()
@@ -49,11 +49,11 @@ class GoogleAuthUiClient(
 
     // サインイン成功時
     suspend fun getSignWithIntent(intent: Intent): SignInResult {
-        Log.d("FirebaseAuth", "getSignWithIntent開始")
+        //Log.d("FirebaseAuth", "getSignWithIntent開始")
         val credential = oneTapClient.getSignInCredentialFromIntent(intent)
         val googleIdToken = credential.googleIdToken
         val googleCredentials = GoogleAuthProvider.getCredential(googleIdToken, null)
-        Log.d("FirebaseAuth", "Googleトークンは" + googleIdToken.toString())
+        //Log.d("FirebaseAuth", "Googleトークンは" + googleIdToken.toString())
         return try {
             val user = auth.signInWithCredential(googleCredentials).await().user
             SignInResult(
@@ -79,7 +79,7 @@ class GoogleAuthUiClient(
     }
 
     fun getSignInUser(): UserData? = auth.currentUser?.run {
-        Log.d("FirebaseAuth", "getSignInUser開始")
+        //Log.d("FirebaseAuth", "getSignInUser開始")
         UserData(
             userId = uid,
             username = displayName,
@@ -101,7 +101,7 @@ class GoogleAuthUiClient(
 
     // サインイン画面が出る前
     private fun buildSignInRequest(): BeginSignInRequest {
-        Log.d("FirebaseAuth", "buildSignInRequest開始")
+        //Log.d("FirebaseAuth", "buildSignInRequest開始")
         return BeginSignInRequest.Builder()
             .setGoogleIdTokenRequestOptions(
                 GoogleIdTokenRequestOptions.builder()

@@ -40,7 +40,7 @@ class StayWatchClient {
         val firebaseAuth = FirebaseAuth.getInstance()
         firebaseAuth.signInWithCredential(credential)
         val firebaseUser = firebaseAuth.currentUser
-        Log.d("StayWatchClient", "firebaseAuthは $firebaseUser")
+        // Log.d("StayWatchClient", "firebaseAuthは $firebaseUser")
         var firebaseIdToken:String? = null
         try {
             firebaseIdToken = firebaseUser?.getIdToken(false)?.result?.token
@@ -54,14 +54,14 @@ class StayWatchClient {
         }
 
         //val firebaseIdToken = firebaseUser?.getIdToken(false)?.result?.token
-        Log.d("StayWatchClient", "firebaseAuthは $firebaseIdToken")
+        //Log.d("StayWatchClient", "firebaseAuthは $firebaseIdToken")
 
         // FirebaseIDトークンを用いて滞在ウォッチサーバからユーザ情報取得
         val (request, response, result) = url.httpGet()
             .header(Headers.AUTHORIZATION to "Bearer $firebaseIdToken")
             .responseJson()
-        Log.d("StayWatchClient", "リクエスト：$request")
-        Log.d("StayWatchClient", "レスポンス：$response")
+        //Log.d("StayWatchClient", "リクエスト：$request")
+        //Log.d("StayWatchClient", "レスポンス：$response")
 
         return when (result) {
             // 失敗時
@@ -98,7 +98,7 @@ class StayWatchClient {
                 // Jsonをパースする
                 val responseUser = Gson().fromJson(resultJson.toString(), UserGetResponse::class.java)
                 println(responseUser)
-                Log.d("API", "ユーザ名：${responseUser}")
+                //Log.d("API", "ユーザ名：${responseUser}")
 
                 // 返り値
                 StayWatchServerResult(

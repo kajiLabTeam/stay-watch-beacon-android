@@ -30,11 +30,11 @@ class BlePeripheralServerManager(private val context: Context) : BleServerManage
 
     private val advertiseCallback = object : AdvertiseCallback() {
         override fun onStartSuccess(settingsInEffect: AdvertiseSettings) {
-            Log.d(TAG, "アドバタイズ開始")
+            //Log.d(TAG, "アドバタイズ開始")
         }
 
         override fun onStartFailure(errorCode: Int){
-            Log.d(TAG, "アドバタイズ失敗")
+            //Log.d(TAG, "アドバタイズ失敗")
         }
     }
 
@@ -70,7 +70,7 @@ class BlePeripheralServerManager(private val context: Context) : BleServerManage
 
         override fun onDeviceDisconnectedFromServer(device: BluetoothDevice) {
             // Not yet implemented
-            Log.d(TAG, "サーバーから切断")
+            //Log.d(TAG, "サーバーから切断")
         }
 
         override fun onServerReady() {
@@ -96,10 +96,10 @@ class BlePeripheralServerManager(private val context: Context) : BleServerManage
 
     // アドバタイズ開始
     fun startAdvertising(uuid: UUID) {
-        Log.d("debug", "アドバタイズを試みるよ")
+        //Log.d("debug", "アドバタイズを試みるよ")
         //S serviceUuid = UUID.randomUUID()
         //Log.d("serverManager", serviceUUID.toString())
-        Log.d("serverManager", uuid.toString())
+        //Log.d("serverManager", uuid.toString())
         val advertiseData = AdvertiseData.Builder()
             //.addServiceUuid(ParcelUuid(serviceUUID))
             .addServiceUuid(ParcelUuid(uuid))
@@ -185,7 +185,7 @@ class BlePeripheralServerManager(private val context: Context) : BleServerManage
     }
 
     private fun setConnectedMangerToServer(device: BluetoothDevice) {
-        Log.d("debug", "コネクトされたよ")
+        //Log.d("debug", "コネクトされたよ")
     }
 
 //    private fun sendNotificationForWriteRequest(connectedManager: SampleConnectedBleManager, value: ByteArray?) {

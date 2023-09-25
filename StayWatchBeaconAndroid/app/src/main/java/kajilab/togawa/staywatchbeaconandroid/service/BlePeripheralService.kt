@@ -70,11 +70,11 @@ class BlePeripheralService: Service() {
                 if(intent.type == "text/bluetooth"){
                     when(intent.getStringExtra("state")){
                         "on" -> {
-                            Log.d("Service", "Bluetoothオンを受け取ったよ")
+                            //Log.d("Service", "Bluetoothオンを受け取ったよ")
                             onBluetooth()
                         }
                         "off" -> {
-                            Log.d("Service", "Bluetoothオフを受け取ったよ")
+                            //Log.d("Service", "Bluetoothオフを受け取ったよ")
                             offBluetooth()
                         }
                     }
@@ -90,7 +90,7 @@ class BlePeripheralService: Service() {
     }
 
     override fun onDestroy() {
-        Log.d("Service", "サービスが終了")
+        //Log.d("Service", "サービスが終了")
         //val peripheralManager = BlePeripheralServerManager(this)
         peripheralServerManager.clear()
         super.onDestroy()
@@ -101,7 +101,7 @@ class BlePeripheralService: Service() {
     }
 
     private fun setupService() {
-        Log.d("Service", "スタートアップサービスが起動")
+        //Log.d("Service", "スタートアップサービスが起動")
 
         // ROOMでデータベースの立ち上げ
         val db = Room.databaseBuilder(
@@ -166,14 +166,14 @@ class BlePeripheralService: Service() {
     }
 
     private fun offBluetooth() {
-        Log.d("Service", "Bluetoothオフになったよ")
+        Log.d("Service", "Bluetooth off")
 
         peripheralServerManager.clear()
         updateNotification("滞在ウォッチ停止中", "Bluetoothをオンにすると再開します")
     }
 
     private fun onBluetooth(){
-        Log.d("Service", "Bluetoothオンになったよ")
+        Log.d("Service", "Bluetooth on")
 
         CoroutineScope(Dispatchers.IO).launch {
             val db = Room.databaseBuilder(

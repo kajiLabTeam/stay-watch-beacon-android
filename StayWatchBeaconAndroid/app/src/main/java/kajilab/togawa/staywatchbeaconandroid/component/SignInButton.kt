@@ -45,8 +45,8 @@ fun SignInButton(googleAuthUiClient: GoogleAuthUiClient, viewModel: BeaconViewMo
                                 Toast.makeText(context, "ユーザ情報取得中", Toast.LENGTH_SHORT).show()
                             }
                             viewModel.onSignInResult(signInResult)
-                            Log.d("MainActivity", "RESULT_OKだったよ")
-                            Log.d("MainActivity", "signInResult: " + signInResult.toString())
+                            //Log.d("MainActivity", "RESULT_OKだったよ")
+                            //Log.d("MainActivity", "signInResult: " + signInResult.toString())
                             // viewModelのメソッドへトークンとメールアドレスを渡してデータベース関連とBLEサービス開始処理を行う
                             val errorCode = viewModel.signInUser(signInResult.data?.email, signInResult.data?.token.toString(), db, context, peripheralServerManager)
                             if(errorCode != null){
@@ -83,11 +83,11 @@ fun SignInButton(googleAuthUiClient: GoogleAuthUiClient, viewModel: BeaconViewMo
 
             Button(onClick = {
                         if(viewModel.isLoading){
-                            Log.d("SignInButton", "ローディング中だから少し待ってね")
+                            //Log.d("SignInButton", "ローディング中だから少し待ってね")
                             return@Button
                         }
                         viewModel.isLoading = true
-                        Log.d("MainActivity", "SignInScreen開始")
+                        //Log.d("MainActivity", "SignInScreen開始")
                         CoroutineScope(Dispatchers.IO).launch {
                             val signInIntentSender = googleAuthUiClient.signIn()
                             launcher.launch(
@@ -95,7 +95,7 @@ fun SignInButton(googleAuthUiClient: GoogleAuthUiClient, viewModel: BeaconViewMo
                                     signInIntentSender ?: return@launch
                                 ).build()
                             )
-                            Log.d("SignInScreen", "サインインボタンが押されたよ")
+                            //Log.d("SignInScreen", "サインインボタンが押されたよ")
                             viewModel.isLoading = false
                         }
                     },

@@ -54,7 +54,7 @@ import kotlinx.coroutines.launch
 import pub.devrel.easypermissions.EasyPermissions
 
 
-class MainActivity : ComponentActivity(), EasyPermissions.PermissionCallbacks {
+class MainActivity : ComponentActivity() {
     private val PERMISSION_REQUEST_CODE = 1
 
 
@@ -130,11 +130,11 @@ class MainActivity : ComponentActivity(), EasyPermissions.PermissionCallbacks {
         // パーミッションが許可されていない時の処理
         if (!EasyPermissions.hasPermissions(this, *permissions)) {
             // パーミッションが許可されていない時の処理
-            Log.d("debug", "権限欲しいよ")
+            //Log.d("debug", "権限欲しいよ")
             EasyPermissions.requestPermissions(this, "権限の説明", PERMISSION_REQUEST_CODE, *permissions)
         }else{
             // パーミッションが許可されている時の処理
-            Log.d("debug", "権限許可されているよ")
+            //Log.d("debug", "権限許可されているよ")
         }
 
         val mBluetoothManager = getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
@@ -181,20 +181,6 @@ class MainActivity : ComponentActivity(), EasyPermissions.PermissionCallbacks {
     override fun onDestroy() {
         super.onDestroy()
         unregisterReceiver(br)
-    }
-
-    override fun onPermissionsGranted(requestCode: Int, list: List<String>) {
-        // ユーザーの許可が得られたときに呼び出される
-        Log.d("Permission", "権限許可された")
-        recreate()
-    }
-
-    override fun onPermissionsDenied(requestCode: Int, perms: MutableList<String>) {
-        Log.d("Permission", "権限許可されなかった")
-        CoroutineScope(Dispatchers.IO).launch {
-            Toast.makeText(application, "権限を全て許可してください", Toast.LENGTH_SHORT).show()
-        }
-        finish()
     }
 
 //    private fun signIn() {
