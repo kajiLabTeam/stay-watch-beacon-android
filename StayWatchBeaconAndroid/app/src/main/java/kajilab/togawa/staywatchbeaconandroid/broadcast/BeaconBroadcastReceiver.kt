@@ -29,39 +29,6 @@ class BeaconBroadcastReceiver: BroadcastReceiver() {
                 startForegroundService(application, bleIntent)
             }
 
-            Intent.ACTION_SCREEN_ON -> {
-                Log.d("Broadcast", "画面がオン")
-
-                if(!isServiceRunning(application, BlePeripheralService::class.java)){
-                    Log.d("Broadcast", "サービスを再起動するよ")
-                    val targetIntent = Intent(application, BlePeripheralService::class.java).apply {
-                        action = Intent.ACTION_SEND
-                        type = "text/screen_on"
-                    }
-                    startForegroundService(application, targetIntent)
-                }
-
-//                val db = Room.databaseBuilder(
-//                    application,
-//                    AppDatabase::class.java,
-//                    "beacon_database"
-//                ).build()
-//                val dao = db.userDao()
-//                CoroutineScope(Dispatchers.IO).launch {
-//                    val user = dao.getUserById(1)
-//                    if(user == null){
-//                        // 端末にユーザ情報がない場合(アプリ初起動時)
-//                        Log.d("Broadcast", "端末にユーザ情報なし")
-//                        return@launch
-//                    }
-//
-//                    if(user.name == null || user.uuid == null || user.communityName == null || user.latestSyncTime == null || user.isAllowedAdvertising == null){
-//                        // サーバに登録されていないユーザでサインインしている状態のとき
-//                        return@launch
-//                    }
-//                }
-            }
-
             Intent.ACTION_AIRPLANE_MODE_CHANGED -> {
                 val bleIntent = Intent(application, BlePeripheralService::class.java)
                 val isAirplaneModeOn = intent.getBooleanExtra("state", false)

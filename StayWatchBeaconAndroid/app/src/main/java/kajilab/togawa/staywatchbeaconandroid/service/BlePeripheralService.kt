@@ -61,9 +61,6 @@ class BlePeripheralService: Service() {
                             testOffAirPlain()
                         }
                     }
-                } else if(intent.type == "text/screen_on"){
-                    Log.d("Service", "スクリーンオンのアクションを受け取ったよ")
-                    setupService()
                 }
             }
             else -> {

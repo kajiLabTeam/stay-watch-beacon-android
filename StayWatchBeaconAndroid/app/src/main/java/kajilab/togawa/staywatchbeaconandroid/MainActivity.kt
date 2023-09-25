@@ -103,11 +103,6 @@ class MainActivity : ComponentActivity() {
             .fallbackToDestructiveMigration()
             .build()
 
-        // viewModelのステートにデータベースからのユーザ情報を入れる
-        CoroutineScope(Dispatchers.IO).launch {
-            viewModel.startViewModel(db)
-        }
-
         // GoogleSignInClientの初期化
         //googleSignInClient = GoogleSignIn.getClient(this, gso)
 
@@ -145,9 +140,13 @@ class MainActivity : ComponentActivity() {
         val br: BroadcastReceiver = BeaconBroadcastReceiver()
         val intentFilter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION).apply {
             addAction(Intent.ACTION_AIRPLANE_MODE_CHANGED)
-            addAction(Intent.ACTION_SCREEN_ON)
         }
         registerReceiver(br, intentFilter)
+
+        // viewModelのステートにデータベースからのユーザ情報を入れる
+        CoroutineScope(Dispatchers.IO).launch {
+            viewModel.startViewModel(db, application)
+        }
 
 
         // 通知関連

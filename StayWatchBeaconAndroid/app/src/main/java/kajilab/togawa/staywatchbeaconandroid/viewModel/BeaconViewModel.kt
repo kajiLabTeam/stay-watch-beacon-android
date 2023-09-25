@@ -19,6 +19,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.room.Room
 import kajilab.togawa.staywatchbeaconandroid.api.StayWatchClient
+import kajilab.togawa.staywatchbeaconandroid.broadcast.BeaconBroadcastReceiver
 import kajilab.togawa.staywatchbeaconandroid.db.AppDatabase
 import kajilab.togawa.staywatchbeaconandroid.db.DBUser
 import kajilab.togawa.staywatchbeaconandroid.db.UserDao
@@ -27,6 +28,7 @@ import kajilab.togawa.staywatchbeaconandroid.model.SignInResult
 import kajilab.togawa.staywatchbeaconandroid.service.BlePeripheralService
 import kajilab.togawa.staywatchbeaconandroid.state.SignInState
 import kajilab.togawa.staywatchbeaconandroid.useCase.EncryptedSharePreferencesManager
+import kajilab.togawa.staywatchbeaconandroid.useCase.ServiceState
 import kajilab.togawa.staywatchbeaconandroid.utils.StatusCode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -61,7 +63,7 @@ class BeaconViewModel(): ViewModel() {
     // firebaseAuth関連
     private val _state = MutableStateFlow(SignInState())
 
-    fun startViewModel(db: AppDatabase){
+    fun startViewModel(db: AppDatabase, context: Context){
         val dao = db.userDao()
         //var user = DBUser(1,null,null,null,null,null)
         val user = dao.getUserById(1)
@@ -84,6 +86,13 @@ class BeaconViewModel(): ViewModel() {
         communityName = user.communityName
         latestSyncTime = user.latestSyncTime
         isAdvertising = user.isAllowedAdvertising
+
+        Log.d("StartViewModel", "サービス開始するかどうか")
+        val serviceState = ServiceState()
+        if(user.isAllowedAdvertising && !serviceState.isServiceRunning(context, BlePeripheralService::class.java)){
+            Log.d("StartViewModel", "サービスが再開")
+            startForegroundService(context, Intent(context, BlePeripheralService::class.java))
+        }
     }
 
     fun onSignInResult(result: SignInResult) {
