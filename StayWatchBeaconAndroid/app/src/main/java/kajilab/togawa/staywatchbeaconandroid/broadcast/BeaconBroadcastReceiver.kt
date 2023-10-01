@@ -19,12 +19,12 @@ import kotlinx.coroutines.launch
 
 class BeaconBroadcastReceiver: BroadcastReceiver() {
     override fun onReceive(application: Context, intent: Intent?) {
-        //Log.d("Broadcast", "何かを検出したよ")
+        Log.d("Broadcast", "何かを検出したよ")
 
         when (intent?.action) {
 
             Intent.ACTION_LOCKED_BOOT_COMPLETED -> {
-                //Log.d("Broadcast", "ロック解除を検知とアドバタイズ開始")
+                Log.d("Broadcast", "ロック解除を検知とアドバタイズ開始")
 
                 //val startService = Intent(application?.applicationContext, BlePeripheralService::class.java)
                 val bleIntent = Intent(application, BlePeripheralService::class.java)

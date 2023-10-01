@@ -35,9 +35,7 @@
                 <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED"/>
                 <action android:name="android.intent.action.AIRPLANE_MODE"/>
 
-                <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="text/*" />
             </intent-filter>
         </receiver>
 
