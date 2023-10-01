@@ -14,8 +14,11 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.ConnectivityManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
+import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -110,12 +113,15 @@ class MainActivity : ComponentActivity() {
             .fallbackToDestructiveMigration()
             .build()
 
-
-
-        // GoogleSignInClientの初期化
-        //googleSignInClient = GoogleSignIn.getClient(this, gso)
-
-//        firebaseAuth = Firebase.auth
+        // バッテリーの最適化を外させる
+        val tmpIntent = Intent()
+        val packageName = packageName
+        val pm = getSystemService(POWER_SERVICE) as PowerManager
+        if(!pm.isIgnoringBatteryOptimizations(packageName)){
+            tmpIntent.action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
+            tmpIntent.data = Uri.parse("package:$packageName")
+            startActivity(tmpIntent)
+        }
 
         // 要求する権限
         val permissions = arrayOf(
