@@ -1,7 +1,9 @@
 package kajilab.togawa.staywatchbeaconandroid.viewModel
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.provider.Settings
 import android.provider.Settings.Global.AIRPLANE_MODE_ON
 import android.util.Log
@@ -13,6 +15,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.startForegroundService
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -66,6 +69,7 @@ class BeaconViewModel(): ViewModel() {
     fun startViewModel(db: AppDatabase, context: Context){
         val dao = db.userDao()
         //var user = DBUser(1,null,null,null,null,null)
+        //dao.deleteUserById(1)
         val user = dao.getUserById(1)
         if(user == null){
             // 端末にユーザ情報がない場合(アプリ初起動時)
@@ -147,6 +151,7 @@ class BeaconViewModel(): ViewModel() {
     }
 
     /**
+     * 同期ボタン
      * 返す値：400 or 410 or 430 or 450 or null
      */
     suspend fun syncUser(db:AppDatabase, context: Context, peripheralServiceManager: BlePeripheralServerManager): Number?{
@@ -312,6 +317,7 @@ class BeaconViewModel(): ViewModel() {
     }
 
     /**
+     * 「発信を開始する」ボタン押したとき
      * 返す値：401 or 440 or Null
      */
     fun startAdvertisingService(db: AppDatabase, peripheralServiceManager: BlePeripheralServerManager, context: Context): Number?{
@@ -352,6 +358,7 @@ class BeaconViewModel(): ViewModel() {
     }
 
     /**
+     * 「発信を停止する」ボタンを押したとき
      * 返す値：Null
      */
     fun stopAdvertisingService(db: AppDatabase, peripheralServiceManager: BlePeripheralServerManager, context: Context): Number?{
@@ -366,7 +373,6 @@ class BeaconViewModel(): ViewModel() {
         isAdvertising = false
         // UUIDをデータベースへ保存
         dao.updateAdvertisingAllowance(false)
-
 
         return null
     }

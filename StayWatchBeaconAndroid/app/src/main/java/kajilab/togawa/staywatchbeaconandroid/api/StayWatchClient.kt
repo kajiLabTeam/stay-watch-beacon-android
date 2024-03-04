@@ -28,7 +28,7 @@ import java.io.IOException
 
 class StayWatchClient {
     //private val url = "https://apppppp.com/jojo.json"
-    private val url = "https://go-staywatch.kajilab.tk/api/v1/check"
+    private val url = "https://staywatch-backend.kajilab.net/api/v1/check"
     private val statusCode = StatusCode
 
     /**

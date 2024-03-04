@@ -25,6 +25,7 @@ import kajilab.togawa.staywatchbeaconandroid.broadcast.BeaconBroadcastReceiver
 import kajilab.togawa.staywatchbeaconandroid.broadcast.BluetoothStateBroadcastReceiver
 import kajilab.togawa.staywatchbeaconandroid.db.AppDatabase
 import kajilab.togawa.staywatchbeaconandroid.model.BlePeripheralServerManager
+import kajilab.togawa.staywatchbeaconandroid.utils.StatusCode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -36,6 +37,7 @@ class BlePeripheralService: Service() {
     companion object {
         const val CHANNEL_ID = "stw344"
         const val CHANNEL_TITLE = "滞在ウォッチ作動中"
+        val statusCode = StatusCode
     }
 
     private val peripheralServerManager = BlePeripheralServerManager(this)
@@ -71,10 +73,12 @@ class BlePeripheralService: Service() {
                     when(intent.getStringExtra("state")){
                         "on" -> {
                             //Log.d("Service", "Bluetoothオンを受け取ったよ")
+                            peripheralServerManager.clear()
                             onBluetooth()
                         }
                         "off" -> {
                             //Log.d("Service", "Bluetoothオフを受け取ったよ")
+                            peripheralServerManager.clear()
                             offBluetooth()
                         }
                     }
@@ -133,6 +137,8 @@ class BlePeripheralService: Service() {
             .setContentIntent(openIntent)
             .setOngoing(true)
             .build()
+        //5. 通知の表示
+        startForeground(1212, notification)
 
         CoroutineScope(Dispatchers.IO).launch {
             // BLEアドバタイズ
@@ -141,10 +147,12 @@ class BlePeripheralService: Service() {
                 // UUIDが正しくない場合
                 return@launch
             }
-            peripheralServerManager.startAdvertising(advertisingUUID)
-
-            //5. 通知の表示
-            startForeground(1212, notification)
+            val err = peripheralServerManager.startAdvertising(advertisingUUID)
+            if(err == statusCode.NOT_PERMISSION){
+                updateNotification("滞在ウォッチ停止中", "権限「付近のデバイス」を許可してください")
+            }else {
+                updateNotification("滞在ウォッチ動作中", "ビーコンアプリが動作中です")
+            }
         }
     }
 
@@ -168,8 +176,32 @@ class BlePeripheralService: Service() {
     private fun offBluetooth() {
         Log.d("Service", "Bluetooth off")
 
-        peripheralServerManager.clear()
-        updateNotification("滞在ウォッチ停止中", "Bluetoothをオンにすると再開します")
+//        peripheralServerManager.clear()
+//        updateNotification("滞在ウォッチ停止中", "Bluetoothをオンにすると再開します")
+
+        CoroutineScope(Dispatchers.IO).launch {
+            val db = Room.databaseBuilder(
+                this@BlePeripheralService,
+                AppDatabase::class.java,
+                "beacon_database"
+            ).build()
+
+            val advertisingUUID = peripheralServerManager.getAdvertisingUUID(db)
+            if(advertisingUUID == null){
+                // UUIDが正しくない場合
+                return@launch
+            }
+            if(peripheralServerManager.canAdvertise){
+                val err = peripheralServerManager.startAdvertising(advertisingUUID)
+                if(err == statusCode.NOT_PERMISSION){
+                    updateNotification("滞在ウォッチ停止中", "権限「付近のデバイス」を許可してください")
+                }else {
+                    updateNotification("滞在ウォッチ動作中", "Bluetoothがオフのときは正常に動作しない場合があります")
+                }
+            }else {
+                updateNotification("滞在ウォッチ停止中", "Bluetoothをオンにすると再開します")
+            }
+        }
     }
 
     private fun onBluetooth(){
@@ -187,9 +219,13 @@ class BlePeripheralService: Service() {
                 // UUIDが正しくない場合
                 return@launch
             }
-            peripheralServerManager.startAdvertising(advertisingUUID)
+            val err = peripheralServerManager.startAdvertising(advertisingUUID)
+            if(err == statusCode.NOT_PERMISSION){
+                updateNotification("滞在ウォッチ停止中", "権限「付近のデバイス」を許可してください")
+            }else {
+                updateNotification("滞在ウォッチ動作中", "ビーコンアプリが動作中です")
+            }
         }
-        updateNotification("滞在ウォッチ動作中", "ビーコンアプリが動作中です")
     }
 
 }

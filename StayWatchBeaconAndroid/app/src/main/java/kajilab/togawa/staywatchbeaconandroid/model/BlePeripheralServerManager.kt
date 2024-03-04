@@ -1,5 +1,8 @@
 package kajilab.togawa.staywatchbeaconandroid.model
 
+//import asia.groovelab.blesample.extension.asHexByteArray
+import android.Manifest
+import android.app.Activity
 import android.content.Context
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
@@ -9,14 +12,23 @@ import android.bluetooth.le.AdvertiseCallback
 import android.bluetooth.le.AdvertiseData
 import android.bluetooth.le.AdvertiseSettings
 import android.bluetooth.le.BluetoothLeAdvertiser
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.ParcelUuid
+import android.provider.Settings
 import android.util.Log
+import android.widget.Toast
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat.startActivity
 import androidx.room.Room
 import kajilab.togawa.staywatchbeaconandroid.db.AppDatabase
 import kajilab.togawa.staywatchbeaconandroid.db.DBUser
 import kajilab.togawa.staywatchbeaconandroid.observer.BaseBondingObserver
 import kajilab.togawa.staywatchbeaconandroid.observer.BaseConnectionObserver
-//import asia.groovelab.blesample.extension.asHexByteArray
+import kajilab.togawa.staywatchbeaconandroid.utils.StatusCode
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import no.nordicsemi.android.ble.BleServerManager
 import no.nordicsemi.android.ble.observer.ServerObserver
 import java.lang.Exception
@@ -26,6 +38,8 @@ class BlePeripheralServerManager(private val context: Context) : BleServerManage
     companion object {
         private const val TAG = "SampleBleServerManager"
         private val serviceUUID = UUID.randomUUID()
+        private const val PERMISSION_REQUEST_CODE = 1
+        val statusCode = StatusCode
     }
 
     private val advertiseCallback = object : AdvertiseCallback() {
@@ -95,13 +109,18 @@ class BlePeripheralServerManager(private val context: Context) : BleServerManage
     }
 
     // アドバタイズ開始
-    fun startAdvertising(uuid: UUID) {
-        //Log.d("debug", "アドバタイズを試みるよ")
-        //S serviceUuid = UUID.randomUUID()
-        //Log.d("serverManager", serviceUUID.toString())
-        //Log.d("serverManager", uuid.toString())
+    fun startAdvertising(uuid: UUID): Number? {
+        //advertiser?.startAdvertising(adviserSettings, advertiseData, advertiseCallback)
+        if (ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.BLUETOOTH_ADVERTISE
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // 「周囲のデバイス」権限がない場合
+            Log.d("serverManager", "権限なくて発信できない")
+            return statusCode.NOT_PERMISSION
+        }
         val advertiseData = AdvertiseData.Builder()
-            //.addServiceUuid(ParcelUuid(serviceUUID))
             .addServiceUuid(ParcelUuid(uuid))
             .build()
 
@@ -114,12 +133,20 @@ class BlePeripheralServerManager(private val context: Context) : BleServerManage
             .setConnectable(false)
             .build()
 
-        //advertiser?.startAdvertising(adviserSettings, advertiseData, advertiseCallback)
         advertiser?.startAdvertising(adviserSettings, advertiseData, advertiseCallback)
+        return null
     }
 
     // アドバタイズ停止
     private fun stopAdvertising() {
+        if (ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.BLUETOOTH_ADVERTISE
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // 「周囲のデバイス」権限がない場合
+            return
+        }
         advertiser?.stopAdvertising(advertiseCallback)
     }
 
@@ -187,12 +214,4 @@ class BlePeripheralServerManager(private val context: Context) : BleServerManage
     private fun setConnectedMangerToServer(device: BluetoothDevice) {
         //Log.d("debug", "コネクトされたよ")
     }
-
-//    private fun sendNotificationForWriteRequest(connectedManager: SampleConnectedBleManager, value: ByteArray?) {
-//        value?.let {
-//            connectedManager.sendNotification(notifyCharacteristic, "ff".asHexByteArray) {
-//                Log.d(TAG, "send notification")
-//            }
-//        }
-//    }
 }

@@ -12,6 +12,11 @@ object StatusCode {
     const val INVALID_UUID = 401
 
     /**
+     * 402
+     */
+    const val NOT_PERMISSION = 402
+
+    /**
      * 410
      */
     const val NO_NETWORK_CONNECTION = 410
