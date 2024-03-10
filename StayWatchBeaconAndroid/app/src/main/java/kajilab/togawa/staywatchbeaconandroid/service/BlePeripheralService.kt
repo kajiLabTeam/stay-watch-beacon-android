@@ -179,9 +179,6 @@ class BlePeripheralService: Service() {
     private fun offBluetooth() {
         Log.d("Service", "Bluetooth off")
 
-//        peripheralServerManager.clear()
-//        updateNotification("滞在ウォッチ停止中", "Bluetoothをオンにすると再開します")
-
         CoroutineScope(Dispatchers.IO).launch {
             val db = Room.databaseBuilder(
                 this@BlePeripheralService,
@@ -194,18 +191,7 @@ class BlePeripheralService: Service() {
                 // UUIDが正しくない場合
                 return@launch
             }
-//            delay(START_ADVERTISE_DELAY)
-            for (i in 1..10) {
-                val delayTimeSec = i*0.1
-                if(peripheralServerManager.canAdvertise){
-                    Log.d("service", "Bluetoothオフから$i 回目: BluetoothLeAdvertiserはNullでないです")
-                }
-                else {
-                    Log.d("service", "Bluetoothオフから$i 回目: BluetoothLeAdvertiserはNullです")
-                }
-                delay(i*100.toLong())
-            }
-            delay(1000)
+            delay(START_ADVERTISE_DELAY)
             if(peripheralServerManager.canAdvertise){
                 val err = peripheralServerManager.startAdvertising(advertisingUUID)
                 if(err == statusCode.NOT_PERMISSION){
