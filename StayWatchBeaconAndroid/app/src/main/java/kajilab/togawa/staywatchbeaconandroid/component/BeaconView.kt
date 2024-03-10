@@ -1,7 +1,10 @@
 package kajilab.togawa.staywatchbeaconandroid.component
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.provider.Settings
 import android.provider.Settings.Global.AIRPLANE_MODE_ON
 import android.util.Log
@@ -13,9 +16,12 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
@@ -32,6 +38,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
 import kajilab.togawa.staywatchbeaconandroid.R
 import kajilab.togawa.staywatchbeaconandroid.api.GoogleAuthUiClient
 import kajilab.togawa.staywatchbeaconandroid.db.AppDatabase
@@ -139,7 +146,8 @@ fun BeaconView (viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient
                         .padding(bottom = 15.dp)
                 )
 
-            } else if(!viewModel.isAndroidBeaconUUID(viewModel.uuid)){
+            }
+            else if(!viewModel.isAndroidBeaconUUID(viewModel.uuid)){
                 // Androidビーコンとして登録されていない場合
                 // 発信中・停止中の四角
                 AdvertiseStatusPanel(
@@ -155,7 +163,66 @@ fun BeaconView (viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient
                     modifier = Modifier
                         .padding(bottom = 15.dp)
                 )
-            } else {
+            }
+            else if(ActivityCompat.checkSelfPermission(application, Manifest.permission.BLUETOOTH_ADVERTISE) != PackageManager.PERMISSION_GRANTED){
+                // 「付近のデバイス」権限が許可されていない場合
+                Button(
+                    onClick = {
+                        if(viewModel.isLoading){
+                            return@Button
+                        }
+                        viewModel.isLoading = true
+                        viewModel.showSetting(application)
+                        viewModel.isLoading = false
+                    },
+                    colors = ButtonDefaults.buttonColors(Color.Transparent),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            color = Color.Red
+                        ),
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ){
+                        Text(
+                            text="権限を許可してください",
+                            color = Color.Black,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            text="設定画面へ",
+                            color = Color.Black,
+                            modifier = Modifier
+                                .background(
+                                    color = Color.Red,
+                                    shape = RoundedCornerShape(5.dp)
+                                )
+                                .padding(horizontal = 10.dp)
+                                .padding(vertical = 7.dp)
+                        )
+                    }
+                }
+                // 発信中・停止中の四角
+                AdvertiseStatusPanel(
+                    textStr = "停止中",
+                    panelColor = Color.Transparent,
+                    textColor = Color.Red,
+                    borderColor = Color.Red
+                )
+                // ユーザ名や同期ボタン、同期時刻
+                Text(
+                    text = "権限を許可したら下の同期ボタンを押してください",
+                    fontSize = 12.sp,
+                    modifier = Modifier
+                        .padding(bottom = 15.dp)
+                )
+            }
+            else {
                 // 発信中・停止中の四角
                 AdvertiseStatusPanel(
                     textStr = if (viewModel.isAdvertising) "発信中" else "停止中",
@@ -191,7 +258,7 @@ fun BeaconView (viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient
         }
 
         // 発信開始停止ボタン
-        if(viewModel.uuid != "" && viewModel.isAndroidBeaconUUID(viewModel.uuid)){
+        if(viewModel.uuid != "" && viewModel.isAndroidBeaconUUID(viewModel.uuid) && ActivityCompat.checkSelfPermission(application, Manifest.permission.BLUETOOTH_ADVERTISE) == PackageManager.PERMISSION_GRANTED){
             if(viewModel.isAdvertising){
                 Button(
                     onClick = {

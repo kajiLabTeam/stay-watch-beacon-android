@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.provider.Settings
 import android.provider.Settings.Global.AIRPLANE_MODE_ON
 import android.util.Log
@@ -16,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.startActivity
 import androidx.core.content.ContextCompat.startForegroundService
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -409,6 +411,14 @@ class BeaconViewModel(): ViewModel() {
 
         val intent = Intent(context, BlePeripheralService::class.java)
         context.stopService(intent)
+    }
+
+    fun showSetting(context: Context){
+        val tmpIntent = Intent()
+        tmpIntent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+        tmpIntent.data = Uri.fromParts("package", context.packageName, null)
+        tmpIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK // FLAG_ACTIVITY_NEW_TASK フラグを設定
+        context.startActivity(tmpIntent)
     }
 
     // 8ebc21144abdba0db7c6ff0a0020002b: String -> 8ebc2114-4abd-ba0d-b7c6-ff0a0020002b: String

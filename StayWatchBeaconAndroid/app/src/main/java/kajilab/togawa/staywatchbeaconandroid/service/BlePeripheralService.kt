@@ -28,6 +28,7 @@ import kajilab.togawa.staywatchbeaconandroid.model.BlePeripheralServerManager
 import kajilab.togawa.staywatchbeaconandroid.utils.StatusCode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.UUID
@@ -38,6 +39,7 @@ class BlePeripheralService: Service() {
         const val CHANNEL_ID = "stw344"
         const val CHANNEL_TITLE = "滞在ウォッチ作動中"
         val statusCode = StatusCode
+        const val START_ADVERTISE_DELAY:Long = 10000
     }
 
     private val peripheralServerManager = BlePeripheralServerManager(this)
@@ -147,6 +149,7 @@ class BlePeripheralService: Service() {
                 // UUIDが正しくない場合
                 return@launch
             }
+            delay(START_ADVERTISE_DELAY)
             val err = peripheralServerManager.startAdvertising(advertisingUUID)
             if(err == statusCode.NOT_PERMISSION){
                 updateNotification("滞在ウォッチ停止中", "権限「付近のデバイス」を許可してください")
@@ -191,6 +194,18 @@ class BlePeripheralService: Service() {
                 // UUIDが正しくない場合
                 return@launch
             }
+//            delay(START_ADVERTISE_DELAY)
+            for (i in 1..10) {
+                val delayTimeSec = i*0.1
+                if(peripheralServerManager.canAdvertise){
+                    Log.d("service", "Bluetoothオフから$i 回目: BluetoothLeAdvertiserはNullでないです")
+                }
+                else {
+                    Log.d("service", "Bluetoothオフから$i 回目: BluetoothLeAdvertiserはNullです")
+                }
+                delay(i*100.toLong())
+            }
+            delay(1000)
             if(peripheralServerManager.canAdvertise){
                 val err = peripheralServerManager.startAdvertising(advertisingUUID)
                 if(err == statusCode.NOT_PERMISSION){
@@ -219,6 +234,7 @@ class BlePeripheralService: Service() {
                 // UUIDが正しくない場合
                 return@launch
             }
+            delay(START_ADVERTISE_DELAY)
             val err = peripheralServerManager.startAdvertising(advertisingUUID)
             if(err == statusCode.NOT_PERMISSION){
                 updateNotification("滞在ウォッチ停止中", "権限「付近のデバイス」を許可してください")
