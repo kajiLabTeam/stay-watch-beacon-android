@@ -17,6 +17,8 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <!-- バッテリーの最適化のオフ -->
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <!-- foregroundServiceType="location"のサービスに必要 -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
 
     <application
         android:allowBackup="true"
@@ -43,6 +45,7 @@
 
         <service
             android:name=".service.BlePeripheralService"
+            android:foregroundServiceType="location"
             android:enabled="true"
             android:exported="true"
             android:directBootAware="true"/>

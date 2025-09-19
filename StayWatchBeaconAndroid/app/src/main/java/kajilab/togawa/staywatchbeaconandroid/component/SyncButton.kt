@@ -1,5 +1,6 @@
 package kajilab.togawa.staywatchbeaconandroid.component
 
+import android.app.Activity
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
@@ -44,7 +45,7 @@ fun SyncButton(googleAuthUiClient: GoogleAuthUiClient, viewModel: BeaconViewMode
             val launcher = rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.StartIntentSenderForResult(),
                 onResult = { result ->
-                    if(result.resultCode == ComponentActivity.RESULT_OK) {
+                    if(result.resultCode == Activity.RESULT_OK) {
                         CoroutineScope(Dispatchers.IO).launch {
                             val signInResult = googleAuthUiClient.getSignWithIntent(
                                 intent = result.data ?: return@launch
