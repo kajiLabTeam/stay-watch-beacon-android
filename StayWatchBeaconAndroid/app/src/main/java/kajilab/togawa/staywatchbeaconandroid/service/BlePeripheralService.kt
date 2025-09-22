@@ -1,5 +1,6 @@
 package kajilab.togawa.staywatchbeaconandroid.service
 
+import android.Manifest
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -15,6 +16,7 @@ import android.os.IBinder
 import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -57,6 +59,7 @@ class BlePeripheralService: Service() {
     }
 
 
+    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
@@ -106,6 +109,7 @@ class BlePeripheralService: Service() {
         return null
     }
 
+    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     private fun setupService() {
         //Log.d("Service", "スタートアップサービスが起動")
 
@@ -159,6 +163,7 @@ class BlePeripheralService: Service() {
         }
     }
 
+    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     private fun updateNotification(title: String, content: String) {
         // アクティビティを起動するIntentを作成
         val openIntent = Intent(this, MainActivity::class.java).let {
@@ -176,6 +181,7 @@ class BlePeripheralService: Service() {
         notificationManager.notify(1212, notification)
     }
 
+    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     private fun offBluetooth() {
         Log.d("Service", "Bluetooth off")
 
@@ -205,6 +211,7 @@ class BlePeripheralService: Service() {
         }
     }
 
+    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     private fun onBluetooth(){
         Log.d("Service", "Bluetooth on")
 
