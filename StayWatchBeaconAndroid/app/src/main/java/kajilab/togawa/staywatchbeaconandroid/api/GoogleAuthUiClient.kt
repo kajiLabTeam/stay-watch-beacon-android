@@ -8,10 +8,9 @@ import android.widget.Toast
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.BeginSignInRequest.GoogleIdTokenRequestOptions
 import com.google.android.gms.auth.api.identity.SignInClient
+import com.google.firebase.Firebase
 import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.auth.ktx.oAuthCredential
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.auth.auth
 import kajilab.togawa.staywatchbeaconandroid.R
 import kajilab.togawa.staywatchbeaconandroid.model.SignInResult
 import kajilab.togawa.staywatchbeaconandroid.model.UserData
@@ -49,11 +48,12 @@ class GoogleAuthUiClient(
 
     // サインイン成功時
     suspend fun getSignWithIntent(intent: Intent): SignInResult {
-        //Log.d("FirebaseAuth", "getSignWithIntent開始")
+//        Log.d("FirebaseAuth", "getSignWithIntent開始")
         val credential = oneTapClient.getSignInCredentialFromIntent(intent)
         val googleIdToken = credential.googleIdToken
         val googleCredentials = GoogleAuthProvider.getCredential(googleIdToken, null)
-        //Log.d("FirebaseAuth", "Googleトークンは" + googleIdToken.toString())
+//        Log.d("FirebaseAuth", "Googleトークンは" + googleIdToken.toString())
+//        Log.d("FirebaseAuth", "名前：${credential.displayName} ${auth.currentUser}")
         return try {
             val user = auth.signInWithCredential(googleCredentials).await().user
             SignInResult(
@@ -101,7 +101,7 @@ class GoogleAuthUiClient(
 
     // サインイン画面が出る前
     private fun buildSignInRequest(): BeginSignInRequest {
-        //Log.d("FirebaseAuth", "buildSignInRequest開始")
+//        Log.d("FirebaseAuth", "buildSignInRequest開始")
         return BeginSignInRequest.Builder()
             .setGoogleIdTokenRequestOptions(
                 GoogleIdTokenRequestOptions.builder()
