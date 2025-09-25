@@ -27,6 +27,8 @@ import kajilab.togawa.staywatchbeaconandroid.broadcast.BeaconBroadcastReceiver
 import kajilab.togawa.staywatchbeaconandroid.broadcast.BluetoothStateBroadcastReceiver
 import kajilab.togawa.staywatchbeaconandroid.db.AppDatabase
 import kajilab.togawa.staywatchbeaconandroid.model.BlePeripheralServerManager
+import kajilab.togawa.staywatchbeaconandroid.useCase.CommonUtils
+import kajilab.togawa.staywatchbeaconandroid.useCase.SipHash24
 import kajilab.togawa.staywatchbeaconandroid.utils.StatusCode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -148,13 +150,31 @@ class BlePeripheralService: Service() {
 
         CoroutineScope(Dispatchers.IO).launch {
             // BLEアドバタイズ
-            val advertisingUUID = peripheralServerManager.getAdvertisingUUID(db)
-            if(advertisingUUID == null){
-                // UUIDが正しくない場合
-                return@launch
-            }
+//            val advertisingUUID = peripheralServerManager.getAdvertisingUUID(db)
+//            if(advertisingUUID == null){
+//                // UUIDが正しくない場合
+//                return@launch
+//            }
+            // SipHash
+            val commonUtils = CommonUtils()
+            val key = "2e60aa6ae7f8f6030e9ab0673e3e7510"    // ここをDBに保存されているやつに差し替える
+            val keyBytes = commonUtils.hexStringToByteArray(key)
+            val k0 = commonUtils.toLongLE(keyBytes, 0)
+            val k1 = commonUtils.toLongLE(keyBytes, 8)
+//            val k0 = 0x03f6f8e76aaa602eL    // 鍵
+//            val k1 = 0x10753e3e67b09a0eL    // 鍵
+            val sip = SipHash24(k0, k1)
+
+            // msgはランダム
+            val msg = "487a1a91364e213d7c67906d".toByteArray()
+            val hash = sip.digest(msg)
+            val msdString = hash.toULong().toString(16) + String(msg)
+//            Log.d("aiueo", "SipHash: ${hash.toULong().toString(16)}")
+//            Log.d("MSD", "ffff${hash.toULong().toString(16)}${String(msg)}")
+//            Log.d("MSD", msdString)
+
             delay(START_ADVERTISE_DELAY)
-            val err = peripheralServerManager.startAdvertising(advertisingUUID)
+            val err = peripheralServerManager.startAdvertising(null, commonUtils.hexStringToByteArray(msdString))
             if(err == statusCode.NOT_PERMISSION){
                 updateNotification("滞在ウォッチ停止中", "権限「付近のデバイス」を許可してください")
             }else {
@@ -192,14 +212,14 @@ class BlePeripheralService: Service() {
                 "beacon_database"
             ).build()
 
-            val advertisingUUID = peripheralServerManager.getAdvertisingUUID(db)
-            if(advertisingUUID == null){
-                // UUIDが正しくない場合
-                return@launch
-            }
+//            val advertisingUUID = peripheralServerManager.getAdvertisingUUID(db)
+//            if(advertisingUUID == null){
+//                // UUIDが正しくない場合
+//                return@launch
+//            }
             delay(START_ADVERTISE_DELAY)
             if(peripheralServerManager.canAdvertise){
-                val err = peripheralServerManager.startAdvertising(advertisingUUID)
+                val err = peripheralServerManager.startAdvertising(null, byteArrayOf(0x0A, 0x0A))
                 if(err == statusCode.NOT_PERMISSION){
                     updateNotification("滞在ウォッチ停止中", "権限「付近のデバイス」を許可してください")
                 }else {
@@ -222,13 +242,22 @@ class BlePeripheralService: Service() {
                 "beacon_database"
             ).build()
 
-            val advertisingUUID = peripheralServerManager.getAdvertisingUUID(db)
-            if(advertisingUUID == null){
-                // UUIDが正しくない場合
-                return@launch
-            }
+//            val advertisingUUID = peripheralServerManager.getAdvertisingUUID(db)
+//            if(advertisingUUID == null){
+//                // UUIDが正しくない場合
+//                return@launch
+//            }
+            // SipHash
+            val k0 = 0x03f6f8e76aaa602eL    // 鍵
+            val k1 = 0x10753e3e67b09a0eL    // 鍵
+            val sip = SipHash24(k0, k1)
+
+            val msg = "487a1a91364e213d7c67906d".toByteArray()
+            val hash = sip.digest(msg)
+            Log.d("aiueo", "SipHash: ${hash.toULong().toString(16)}")
+            Log.d("MSD", "ffff${hash.toULong().toString(16)}${String(msg)}")
             delay(START_ADVERTISE_DELAY)
-            val err = peripheralServerManager.startAdvertising(advertisingUUID)
+            val err = peripheralServerManager.startAdvertising(null, msg)
             if(err == statusCode.NOT_PERMISSION){
                 updateNotification("滞在ウォッチ停止中", "権限「付近のデバイス」を許可してください")
             }else {

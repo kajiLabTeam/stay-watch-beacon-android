@@ -2,37 +2,26 @@ package kajilab.togawa.staywatchbeaconandroid.model
 
 //import asia.groovelab.blesample.extension.asHexByteArray
 import android.Manifest
-import android.app.Activity
-import android.content.Context
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattService
 import android.bluetooth.le.AdvertiseCallback
 import android.bluetooth.le.AdvertiseData
 import android.bluetooth.le.AdvertiseSettings
 import android.bluetooth.le.BluetoothLeAdvertiser
-import android.content.Intent
+import android.content.Context
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.ParcelUuid
-import android.provider.Settings
 import android.util.Log
-import android.widget.Toast
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat.startActivity
-import androidx.room.Room
 import kajilab.togawa.staywatchbeaconandroid.db.AppDatabase
 import kajilab.togawa.staywatchbeaconandroid.db.DBUser
 import kajilab.togawa.staywatchbeaconandroid.observer.BaseBondingObserver
 import kajilab.togawa.staywatchbeaconandroid.observer.BaseConnectionObserver
 import kajilab.togawa.staywatchbeaconandroid.utils.StatusCode
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import no.nordicsemi.android.ble.BleServerManager
 import no.nordicsemi.android.ble.observer.ServerObserver
-import java.lang.Exception
-import java.util.*
+import java.util.UUID
 
 class BlePeripheralServerManager(private val context: Context) : BleServerManager(context) {
     companion object {
@@ -88,7 +77,7 @@ class BlePeripheralServerManager(private val context: Context) : BleServerManage
         }
 
         override fun onServerReady() {
-            startAdvertising(serviceUUID)
+            startAdvertising(serviceUUID, byteArrayOf(0x0A, 0x0B))
         }
     }
 
@@ -109,7 +98,7 @@ class BlePeripheralServerManager(private val context: Context) : BleServerManage
     }
 
     // アドバタイズ開始
-    fun startAdvertising(uuid: UUID): Number? {
+    fun startAdvertising(uuid: UUID?, msd: ByteArray): Number? {
         //advertiser?.startAdvertising(adviserSettings, advertiseData, advertiseCallback)
         if (ActivityCompat.checkSelfPermission(
                 context,
@@ -120,8 +109,10 @@ class BlePeripheralServerManager(private val context: Context) : BleServerManage
             Log.d("serverManager", "権限なくて発信できない")
             return statusCode.NOT_PERMISSION
         }
+        val manufactureId = 65535
         val advertiseData = AdvertiseData.Builder()
-            .addServiceUuid(ParcelUuid(uuid))
+//            .addServiceUuid(ParcelUuid(uuid))
+            .addManufacturerData(manufactureId, msd)
             .build()
 
         val adviserSettings = AdvertiseSettings.Builder()
