@@ -35,6 +35,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.security.SecureRandom
 import java.util.UUID
 
 class BlePeripheralService: Service() {
@@ -44,6 +45,7 @@ class BlePeripheralService: Service() {
         const val CHANNEL_TITLE = "滞在ウォッチ作動中"
         val statusCode = StatusCode
         const val START_ADVERTISE_DELAY:Long = 10000
+        const val PRIVATE_KEY = "2e60aa6ae7f8f6030e9ab0673e3e7510"
     }
 
     private val peripheralServerManager = BlePeripheralServerManager(this)
@@ -53,11 +55,19 @@ class BlePeripheralService: Service() {
     override fun onCreate() {
         super.onCreate()
         // BroadcastReceiverを登録
-        val broadcastReceiver = BluetoothStateBroadcastReceiver()
-        val intentFilter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION).apply {
+        val bluetoothBroadcastReceiver = BluetoothStateBroadcastReceiver()
+        val bluetoothIntentFilter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION).apply {
             addAction(BluetoothAdapter.ACTION_STATE_CHANGED)
         }
-        registerReceiver(broadcastReceiver, intentFilter)
+        registerReceiver(bluetoothBroadcastReceiver, bluetoothIntentFilter)
+
+        val beaconBroadcastReceiver = BeaconBroadcastReceiver()
+        val beaconIntentFilter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION).apply {
+//            addAction(Intent.ACTION_SCREEN_ON)
+            addAction(Intent.ACTION_USER_PRESENT)
+            addAction(Intent.ACTION_LOCKED_BOOT_COMPLETED)
+        }
+        registerReceiver(beaconBroadcastReceiver, beaconIntentFilter)
     }
 
 
@@ -75,6 +85,11 @@ class BlePeripheralService: Service() {
         }
 
         when(intent.action){
+            Intent.ACTION_USER_PRESENT -> {
+            // Log.d("ServiceBroadcast", "がめんろっくかいじょされたよおおおお")
+                peripheralServerManager.clear()
+                handleOnScreen()
+            }
             Intent.ACTION_SEND -> {
                 if(intent.type == "text/bluetooth"){
                     when(intent.getStringExtra("state")){
@@ -131,8 +146,6 @@ class BlePeripheralService: Service() {
             .build()
         notificationManager.createNotificationChannel(channel)
 
-        //manager.notify(CHANNEL_ID, 新しいnotification)
-
         // アクティビティを起動するIntentを作成
         val openIntent = Intent(this, MainActivity::class.java).let {
             PendingIntent.getActivity(this, 0, it, PendingIntent.FLAG_IMMUTABLE)
@@ -157,8 +170,8 @@ class BlePeripheralService: Service() {
 //            }
             // SipHash
             val commonUtils = CommonUtils()
-            val key = "2e60aa6ae7f8f6030e9ab0673e3e7510"    // ここをDBに保存されているやつに差し替える
-            val keyBytes = commonUtils.hexStringToByteArray(key)
+//            val key = "2e60aa6ae7f8f6030e9ab0673e3e7510"    // ここをDBに保存されているやつに差し替える
+            val keyBytes = commonUtils.hexStringToByteArray(PRIVATE_KEY)
             val k0 = commonUtils.toLongLE(keyBytes, 0)
             val k1 = commonUtils.toLongLE(keyBytes, 8)
 //            val k0 = 0x03f6f8e76aaa602eL    // 鍵
@@ -166,14 +179,19 @@ class BlePeripheralService: Service() {
             val sip = SipHash24(k0, k1)
 
             // msgはランダム
-            val msg = "487a1a91364e213d7c67906d".toByteArray()
-            val hash = sip.digest(msg)
-            val msdString = hash.toULong().toString(16) + String(msg)
+            val msg = generateRandomHex(24)
+            Log.d("Service", "ランダムな値はーー${msg}")
+//            val msg = "487a1a91364e213d7c67906d".toByteArray()
+            val hash = sip.digest(msg.toByteArray())
+            Log.d("Service", "ハッシュ値はーー${hash}")
+            val msdString = hash.toULong().toString(16) + msg
+            Log.d("Service", "発信するMSDはーー${msdString}")
 //            Log.d("aiueo", "SipHash: ${hash.toULong().toString(16)}")
 //            Log.d("MSD", "ffff${hash.toULong().toString(16)}${String(msg)}")
 //            Log.d("MSD", msdString)
 
             delay(START_ADVERTISE_DELAY)
+//            val err = peripheralServerManager.startAdvertising(null, byteArrayOf(0x0A, 0x0A))
             val err = peripheralServerManager.startAdvertising(null, commonUtils.hexStringToByteArray(msdString))
             if(err == statusCode.NOT_PERMISSION){
                 updateNotification("滞在ウォッチ停止中", "権限「付近のデバイス」を許可してください")
@@ -199,6 +217,47 @@ class BlePeripheralService: Service() {
             .build()
 
         notificationManager.notify(1212, notification)
+    }
+
+    // 画面ロックを解除した際に実行
+    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
+    private fun handleOnScreen() {
+//        Log.d("Service", "Screen ON")
+        CoroutineScope(Dispatchers.IO).launch {
+            val db = Room.databaseBuilder(
+                this@BlePeripheralService,
+                AppDatabase::class.java,
+                "beacon_database"
+            ).build()
+
+            delay(START_ADVERTISE_DELAY)
+            // SipHash
+            val commonUtils = CommonUtils()
+            val keyBytes = commonUtils.hexStringToByteArray(PRIVATE_KEY)
+            val k0 = commonUtils.toLongLE(keyBytes, 0)
+            val k1 = commonUtils.toLongLE(keyBytes, 8)
+            val sip = SipHash24(k0, k1)
+            // msgはランダム
+            val msg = generateRandomHex(24)
+            Log.d("Service", "ランダムな値はーー${msg}")
+            val hash = sip.digest(msg.toByteArray())
+            Log.d("Service", "ハッシュ値はーー${hash}")
+            val msdString = hash.toULong().toString(16) + msg
+            Log.d("Service", "発信するMSDはーー${msdString}")
+            if(peripheralServerManager.canAdvertise){
+                val err = peripheralServerManager.startAdvertising(null, commonUtils.hexStringToByteArray(msdString))
+                if(err == statusCode.NOT_PERMISSION){
+                    updateNotification("滞在ウォッチ停止中", "権限「付近のデバイス」を許可してください")
+                }
+            }
+//            delay(START_ADVERTISE_DELAY)
+//            val err = peripheralServerManager.startAdvertising(null, byteArrayOf(0x0D, 0x0B))
+//            if(err == statusCode.NOT_PERMISSION){
+//                updateNotification("滞在ウォッチ停止中", "権限「付近のデバイス」を許可してください")
+//            }else {
+//                updateNotification("滞在ウォッチ動作中", "画面ロック解除されましたね")
+//            }
+        }
     }
 
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
@@ -264,6 +323,13 @@ class BlePeripheralService: Service() {
                 updateNotification("滞在ウォッチ動作中", "ビーコンアプリが動作中です")
             }
         }
+    }
+
+    fun generateRandomHex(length: Int): String {
+        val random = SecureRandom()
+        val bytes = ByteArray(length / 2) // 16進数2文字で1バイト
+        random.nextBytes(bytes)
+        return bytes.joinToString("") { "%02x".format(it) }
     }
 
 }

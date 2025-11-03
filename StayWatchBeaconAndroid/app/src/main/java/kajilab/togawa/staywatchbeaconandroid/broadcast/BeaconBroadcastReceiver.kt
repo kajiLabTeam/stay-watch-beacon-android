@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.startForegroundService
 import androidx.room.Room
 import kajilab.togawa.staywatchbeaconandroid.db.AppDatabase
@@ -29,6 +30,15 @@ class BeaconBroadcastReceiver: BroadcastReceiver() {
                 //val startService = Intent(application?.applicationContext, BlePeripheralService::class.java)
                 val bleIntent = Intent(application, BlePeripheralService::class.java)
                 startForegroundService(application, bleIntent)
+            }
+
+            Intent.ACTION_USER_PRESENT -> {
+                Log.d("Broadcast", "画面ロック解除を検知")
+                val bleIntent = Intent(application, BlePeripheralService::class.java)
+                val targetIntent = bleIntent.apply {
+                    action = Intent.ACTION_USER_PRESENT
+                }
+                startForegroundService(application, targetIntent)
             }
 
 //            Intent.ACTION_AIRPLANE_MODE_CHANGED -> {

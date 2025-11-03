@@ -2,11 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.BLUETOOTH"></uses-permission>
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"></uses-permission>
+    <uses-permission android:name="android.permission.BLUETOOTH"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
     <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE"/>
     <!-- 通知　-->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
@@ -38,6 +39,7 @@
             <intent-filter>
                 <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED"/>
                 <action android:name="android.intent.action.AIRPLANE_MODE"/>
+                <action android:name="android.intent.action.ACTION_USER_PRESENT"/>
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
@@ -45,10 +47,10 @@
 
         <service
             android:name=".service.BlePeripheralService"
-            android:foregroundServiceType="location"
+            android:foregroundServiceType="connectedDevice"
             android:enabled="true"
             android:exported="true"
-            android:directBootAware="true"/>
+            android:directBootAware="true" />
 
         <activity
             android:name=".MainActivity"

@@ -143,6 +143,7 @@ class MainActivity : ComponentActivity() {
         val permissions = arrayOf(
             Manifest.permission.ACCESS_COARSE_LOCATION,
             Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.RECEIVE_BOOT_COMPLETED, // 電源起動時のブロードキャストを受け取るための権限
             Manifest.permission.BLUETOOTH,
             Manifest.permission.BLUETOOTH_ADMIN,
             Manifest.permission.BLUETOOTH_ADVERTISE,    // 付近のデバイス
@@ -173,6 +174,9 @@ class MainActivity : ComponentActivity() {
         // BroadcastReceiverを登録
         val intentFilter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION).apply {
             addAction(Intent.ACTION_AIRPLANE_MODE_CHANGED)
+            addAction(Intent.ACTION_SCREEN_ON)
+            addAction(Intent.ACTION_USER_PRESENT)
+            addAction(Intent.ACTION_LOCKED_BOOT_COMPLETED)
         }
         registerReceiver(br, intentFilter)
 
