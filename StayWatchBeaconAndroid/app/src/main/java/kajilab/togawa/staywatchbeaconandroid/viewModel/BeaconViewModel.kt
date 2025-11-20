@@ -203,7 +203,7 @@ class BeaconViewModel(): ViewModel() {
         // サーバーからユーザ情報を取得
         Log.d("ViewModel", "GoogleIDトークンを使って滞在ウォッチサーバからユーザ取得するぞう")
         val stayWatchClient = StayWatchClient()
-        val user = stayWatchClient.getUserFromServer(token)
+        val user = stayWatchClient.postPrivBeaconKeyToServer(token)
         if(user.errorMessage != null){
             if(user.errorStatus != statusCode.NO_NETWORK_CONNECTION){
                 // サーバーからユーザを取得するのが失敗したときの処理
