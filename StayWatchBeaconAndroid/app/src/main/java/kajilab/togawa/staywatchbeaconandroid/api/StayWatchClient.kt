@@ -17,6 +17,7 @@ import kajilab.togawa.staywatchbeaconandroid.model.StayWatchUser
 import kajilab.togawa.staywatchbeaconandroid.model.User
 import kajilab.togawa.staywatchbeaconandroid.model.UserGetResponse
 import kajilab.togawa.staywatchbeaconandroid.model.UserPostResponse
+import kajilab.togawa.staywatchbeaconandroid.useCase.RsaEncryptor
 import kajilab.togawa.staywatchbeaconandroid.utils.BeaconID
 import kajilab.togawa.staywatchbeaconandroid.utils.StatusCode
 import kotlinx.coroutines.Dispatchers.IO
@@ -33,7 +34,9 @@ import java.io.IOException
 class StayWatchClient {
     //private val url = "https://apppppp.com/jojo.json"
 //    private val url = "https://staywatch-backend.kajilab.net/api/v1/check"
-    private val url = "http://192.168.101.14:8082/api/v1/users/key"
+//    private val url = "http://192.168.101.14:8082/api/v1/users/key"
+    private val url = "http://192.168.0.8:8082/api/v1/users/key"
+//    private val url = "https://staywatch-backend.kajilab.net/api/v1/users/key"
     private val statusCode = StatusCode
 
     /**
@@ -144,14 +147,16 @@ class StayWatchClient {
         }
 
         // ======== Postで送るPrivBeaconの鍵(暗号化済み)を用意 ========
+        val encryptor = RsaEncryptor()
         // PrivBeaconの鍵を生成
-
+        val privbeaconKey = encryptor.generatePrivBeaconKey()
+        Log.d("StayWatchClient", "privbeaconKey(暗号化前)は $privbeaconKey")
         // PrivBeaconの鍵を暗号化
-        val privbeaconKeyEncryption = "uFa4X3DVYMtLrEsnGnOOvw6ZTRfgc20bPs28gbQd7EoUdF9UCND7hdf/hEkdIcQYw7W7oA2PsFAHrOXGnbZm/Xe/6giALMsjzSPUEs06/KGnhw7fb0zH5Kh8M2tW3yeqQh44BPH3rz3NKFXC1a3hn/zB15DlMEE0VzpKAJjaaXh4T+OJL+T0fxiHi+WpGa51egQNcZ1BPJMnwMaCmqacl0bVlb2XnTbgpu/NZtHt83gIG9jo6dhzZmwxx3fjv54n7vbp2TwJNDhf5dJRIhvF5Mz7LM/kjV3KdFOHs4h9JFwumRAQMGq1g84uf1Gf7kWOB4B4VirUIkLph+/sEUt6dg=="
+        val privbeaconKeyEncryption = encryptor.encrypt(privbeaconKey)
 
         //val firebaseIdToken = firebaseUser?.getIdToken(false)?.result?.token
         Log.d("StayWatchClient", "firebaseAuthは $firebaseIdToken")
-        Log.d("StayWatchClient", "privbeaconKeyは $privbeaconKeyEncryption")
+        Log.d("StayWatchClient", "privbeaconKey(暗号化済み)は $privbeaconKeyEncryption")
 
         // ======== サーバにPrivBeaconの鍵をPostし，ユーザ情報を取得 ========
         // FirebaseIDトークンを用いて滞在ウォッチサーバからユーザ情報取得
