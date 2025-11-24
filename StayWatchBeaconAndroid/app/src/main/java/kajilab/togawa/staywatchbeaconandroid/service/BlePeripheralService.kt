@@ -45,17 +45,20 @@ class BlePeripheralService: Service() {
         const val CHANNEL_TITLE = "滞在ウォッチ作動中"
         val statusCode = StatusCode
         const val START_ADVERTISE_DELAY:Long = 10000
-        const val PRIVATE_KEY = "2e60aa6ae7f8f6030e9ab0673e3e7510"
+//        const val PRIVATE_KEY = "2e60aa6ae7f8f6030e9ab0673e3e7510"
     }
 
     private val peripheralServerManager = BlePeripheralServerManager(this)
 
     private lateinit var notificationManager: NotificationManagerCompat
+
+    private lateinit var commonUtils: CommonUtils
     private lateinit var bluetoothBroadcastReceiver: BluetoothStateBroadcastReceiver
     private lateinit var beaconBroadcastReceiver: BeaconBroadcastReceiver
 
     override fun onCreate() {
         super.onCreate()
+        commonUtils = CommonUtils()
         // BroadcastReceiverを登録
         bluetoothBroadcastReceiver = BluetoothStateBroadcastReceiver()
         val bluetoothIntentFilter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION).apply {
@@ -119,21 +122,18 @@ class BlePeripheralService: Service() {
 
     override fun onDestroy() {
         //Log.d("Service", "サービスが終了")
-        //val peripheralManager = BlePeripheralServerManager(this)
         // --- ① BLE の停止 ---
         try {
             peripheralServerManager.clear()
         } catch (e: Exception) {
             Log.e("Service", "Failed to clear BLE peripheral", e)
         }
-
         // --- ② BroadcastReceiver の解除 ---
         try {
             unregisterReceiver(bluetoothBroadcastReceiver)
         } catch (e: IllegalArgumentException) {
             // 既に解除されている可能性あり → 無視
         }
-
         try {
             unregisterReceiver(beaconBroadcastReceiver)
         } catch (e: IllegalArgumentException) {
@@ -149,7 +149,6 @@ class BlePeripheralService: Service() {
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     private fun setupService() {
         //Log.d("Service", "スタートアップサービスが起動")
-
         // ROOMでデータベースの立ち上げ
         val db = Room.databaseBuilder(
             this,
@@ -183,45 +182,13 @@ class BlePeripheralService: Service() {
 
         CoroutineScope(Dispatchers.IO).launch {
             // BLEアドバタイズ
-//            val advertisingUUID = peripheralServerManager.getAdvertisingUUID(db)
-//            if(advertisingUUID == null){
-//                // UUIDが正しくない場合
-//                return@launch
-//            }
             // SipHash
-            val commonUtils = CommonUtils()
             val privBeaconKey = peripheralServerManager.getPrivBeaconKey(db)
             if(privBeaconKey == null){
                 // PrivBeaconKeyがない場合
                 return@launch
             }
-            val keyBytes = commonUtils.hexStringToByteArray(privBeaconKey)
-            val k0 = commonUtils.toLongLE(keyBytes, 0)
-            val k1 = commonUtils.toLongLE(keyBytes, 8)
-//            val k0 = 0x03f6f8e76aaa602eL    // 鍵
-//            val k1 = 0x10753e3e67b09a0eL    // 鍵
-            val sip = SipHash24(k0, k1)
-
-            // msgはランダム
-            val msg = generateRandomHex(24)
-            Log.d("Service", "ランダムな値はーー${msg}")
-//            val msg = "487a1a91364e213d7c67906d".toByteArray()
-            val hash = sip.digest(msg.toByteArray())
-            Log.d("Service", "ハッシュ値はーー${hash}")
-            val msdString = hash.toULong().toString(16) + msg
-            Log.d("Service", "発信するMSDはーー${msdString}")
-//            Log.d("aiueo", "SipHash: ${hash.toULong().toString(16)}")
-//            Log.d("MSD", "ffff${hash.toULong().toString(16)}${String(msg)}")
-//            Log.d("MSD", msdString)
-
-            delay(START_ADVERTISE_DELAY)
-//            val err = peripheralServerManager.startAdvertising(null, byteArrayOf(0x0A, 0x0A))
-            val err = peripheralServerManager.startAdvertising(null, commonUtils.hexStringToByteArray(msdString))
-            if(err == statusCode.NOT_PERMISSION){
-                updateNotification("滞在ウォッチ停止中", "権限「付近のデバイス」を許可してください")
-            }else {
-                updateNotification("滞在ウォッチ動作中", "ビーコンアプリが動作中です")
-            }
+            startAdvertisingPrivBeaconKey(privBeaconKey)
         }
     }
 
@@ -256,36 +223,12 @@ class BlePeripheralService: Service() {
 
             delay(START_ADVERTISE_DELAY)
             // SipHash
-            val commonUtils = CommonUtils()
             val privBeaconKey = peripheralServerManager.getPrivBeaconKey(db)
             if(privBeaconKey == null){
                 // PrivBeaconKeyがない場合
                 return@launch
             }
-            val keyBytes = commonUtils.hexStringToByteArray(privBeaconKey)
-            val k0 = commonUtils.toLongLE(keyBytes, 0)
-            val k1 = commonUtils.toLongLE(keyBytes, 8)
-            val sip = SipHash24(k0, k1)
-            // msgはランダム
-            val msg = generateRandomHex(24)
-            Log.d("Service", "ランダムな値はーー${msg}")
-            val hash = sip.digest(msg.toByteArray())
-            Log.d("Service", "ハッシュ値はーー${hash}")
-            val msdString = hash.toULong().toString(16) + msg
-            Log.d("Service", "発信するMSDはーー${msdString}")
-            if(peripheralServerManager.canAdvertise){
-                val err = peripheralServerManager.startAdvertising(null, commonUtils.hexStringToByteArray(msdString))
-                if(err == statusCode.NOT_PERMISSION){
-                    updateNotification("滞在ウォッチ停止中", "権限「付近のデバイス」を許可してください")
-                }
-            }
-//            delay(START_ADVERTISE_DELAY)
-//            val err = peripheralServerManager.startAdvertising(null, byteArrayOf(0x0D, 0x0B))
-//            if(err == statusCode.NOT_PERMISSION){
-//                updateNotification("滞在ウォッチ停止中", "権限「付近のデバイス」を許可してください")
-//            }else {
-//                updateNotification("滞在ウォッチ動作中", "画面ロック解除されましたね")
-//            }
+            restartAdvertisingPrivBeaconKey(privBeaconKey)
         }
     }
 
@@ -300,14 +243,17 @@ class BlePeripheralService: Service() {
                 "beacon_database"
             ).build()
 
-//            val advertisingUUID = peripheralServerManager.getAdvertisingUUID(db)
-//            if(advertisingUUID == null){
-//                // UUIDが正しくない場合
-//                return@launch
-//            }
             delay(START_ADVERTISE_DELAY)
             if(peripheralServerManager.canAdvertise){
-                val err = peripheralServerManager.startAdvertising(null, byteArrayOf(0x0A, 0x0A))
+                // SipHash
+                val privBeaconKey = peripheralServerManager.getPrivBeaconKey(db)
+                if(privBeaconKey == null){
+                    // PrivBeaconKeyがない場合
+                    return@launch
+                }
+                val msdString = getMSDFromPrivBeaconKey(privBeaconKey)
+                delay(START_ADVERTISE_DELAY)
+                val err = peripheralServerManager.startAdvertising(null, commonUtils.hexStringToByteArray(msdString))
                 if(err == statusCode.NOT_PERMISSION){
                     updateNotification("滞在ウォッチ停止中", "権限「付近のデバイス」を許可してください")
                 }else {
@@ -330,22 +276,15 @@ class BlePeripheralService: Service() {
                 "beacon_database"
             ).build()
 
-//            val advertisingUUID = peripheralServerManager.getAdvertisingUUID(db)
-//            if(advertisingUUID == null){
-//                // UUIDが正しくない場合
-//                return@launch
-//            }
             // SipHash
-            val k0 = 0x03f6f8e76aaa602eL    // 鍵
-            val k1 = 0x10753e3e67b09a0eL    // 鍵
-            val sip = SipHash24(k0, k1)
-
-            val msg = "487a1a91364e213d7c67906d".toByteArray()
-            val hash = sip.digest(msg)
-            Log.d("aiueo", "SipHash: ${hash.toULong().toString(16)}")
-            Log.d("MSD", "ffff${hash.toULong().toString(16)}${String(msg)}")
+            val privBeaconKey = peripheralServerManager.getPrivBeaconKey(db)
+            if(privBeaconKey == null){
+                // PrivBeaconKeyがない場合
+                return@launch
+            }
+            val msdString = getMSDFromPrivBeaconKey(privBeaconKey)
             delay(START_ADVERTISE_DELAY)
-            val err = peripheralServerManager.startAdvertising(null, msg)
+            val err = peripheralServerManager.startAdvertising(null, commonUtils.hexStringToByteArray(msdString))
             if(err == statusCode.NOT_PERMISSION){
                 updateNotification("滞在ウォッチ停止中", "権限「付近のデバイス」を許可してください")
             }else {
@@ -359,6 +298,47 @@ class BlePeripheralService: Service() {
         val bytes = ByteArray(length / 2) // 16進数2文字で1バイト
         random.nextBytes(bytes)
         return bytes.joinToString("") { "%02x".format(it) }
+    }
+
+    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
+    suspend fun restartAdvertisingPrivBeaconKey(privBeaconKey: String) {    // 通知を新たに出したくない時
+        val msdString = getMSDFromPrivBeaconKey(privBeaconKey)
+        delay(START_ADVERTISE_DELAY)
+        val err = peripheralServerManager.startAdvertising(null, commonUtils.hexStringToByteArray(msdString))
+        if(err == statusCode.NOT_PERMISSION){
+            updateNotification("滞在ウォッチ停止中", "権限「付近のデバイス」を許可してください")
+        }
+    }
+
+    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
+    suspend fun startAdvertisingPrivBeaconKey(privBeaconKey: String) {  // 通知を新たに出しても良い場合（頻繁にこれを呼び出すと通知がうるさくなる）
+        val msdString = getMSDFromPrivBeaconKey(privBeaconKey)
+        delay(START_ADVERTISE_DELAY)
+//            val err = peripheralServerManager.startAdvertising(null, byteArrayOf(0x0A, 0x0A))
+        val err = peripheralServerManager.startAdvertising(null, commonUtils.hexStringToByteArray(msdString))
+        if(err == statusCode.NOT_PERMISSION){
+            updateNotification("滞在ウォッチ停止中", "権限「付近のデバイス」を許可してください") // updateでもたまに通知が新たに作られる判定になるため頻繁に呼び出しすぎ注意
+        }else {
+            updateNotification("滞在ウォッチ動作中", "ビーコンアプリが動作中です")
+        }
+    }
+
+    fun getMSDFromPrivBeaconKey(privBeaconKey: String): String {
+        val keyBytes = commonUtils.hexStringToByteArray(privBeaconKey)
+        val k0 = commonUtils.toLongLE(keyBytes, 0)
+        val k1 = commonUtils.toLongLE(keyBytes, 8)
+//            val k0 = 0x03f6f8e76aaa602eL    // 鍵
+//            val k1 = 0x10753e3e67b09a0eL    // 鍵
+        val sip = SipHash24(k0, k1)
+
+        val msg = generateRandomHex(24)
+        Log.d("Service", "ランダムな値は $msg")
+//            val msg = "487a1a91364e213d7c67906d".toByteArray()
+        val hash = sip.digest(msg.toByteArray())
+        Log.d("Service", "ハッシュ値は $hash")
+        val msdString = hash.toULong().toString(16) + msg
+        Log.d("Service", "発信するMSDは $msdString")
+        return msdString
     }
 
 }
