@@ -165,6 +165,24 @@ class BlePeripheralServerManager(private val context: Context) : BleServerManage
         return advertisingUuid
     }
 
+    // PrivBeaconの鍵を取得
+    fun getPrivBeaconKey(db: AppDatabase): String? {
+        val dao = db.userDao()
+
+        val dbUser: DBUser? = dao.getUserById(1)
+        if(dbUser == null){
+            return null
+        }
+        if(dbUser.privbeaconKey == null || dbUser.isAllowedAdvertising == null){
+            return null
+        }
+        if(!dbUser.isAllowedAdvertising){
+            return null
+        }
+        val privBeaconKey = dbUser.privbeaconKey
+        return privBeaconKey
+    }
+
     // 8ebc21144abdba0db7c6ff0a0020002b: String -> 8ebc2114-4abd-ba0d-b7c6-ff0a0020002b: String
     private fun formatUuidString(strUuid: String): String {
         val formattedStr = buildString {

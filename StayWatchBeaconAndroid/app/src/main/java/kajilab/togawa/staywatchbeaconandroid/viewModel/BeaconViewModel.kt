@@ -212,6 +212,7 @@ class BeaconViewModel(): ViewModel() {
                     name = null,
                     uuid = null,
                     email = gmail,
+                    privbeaconKey = null,
                     communityName = null,
                     latestSyncTime = latestSyncTime,
                     isAllowedAdvertising = false
@@ -230,6 +231,7 @@ class BeaconViewModel(): ViewModel() {
             name = user.data?.userName,
             uuid = user.data?.uuid,
             email = gmail,
+            privbeaconKey = user.data?.privbeaconKey,
             communityName = user.data?.communityName,
             latestSyncTime = latestSyncTime,
             isAllowedAdvertising = false
@@ -392,7 +394,7 @@ class BeaconViewModel(): ViewModel() {
         CoroutineScope(Dispatchers.IO).launch {
             Log.d("ViewModel", "トークンを使って滞在ウォッチサーバからユーザ取得するぞう")
             val stayWatchClient = StayWatchClient()
-            val user = stayWatchClient.getUserFromServer("testtokne")
+            val user = stayWatchClient.postPrivBeaconKeyToServer("testtokne")
             Log.d("ViewModel", "ユーザ情報：" + user.data?.userName)
             Log.d("ViewModel", "Errorメッセージ：" + user.errorMessage)
         }

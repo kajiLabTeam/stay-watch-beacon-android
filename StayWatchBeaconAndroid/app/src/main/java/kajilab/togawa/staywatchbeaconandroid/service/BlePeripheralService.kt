@@ -51,17 +51,19 @@ class BlePeripheralService: Service() {
     private val peripheralServerManager = BlePeripheralServerManager(this)
 
     private lateinit var notificationManager: NotificationManagerCompat
+    private lateinit var bluetoothBroadcastReceiver: BluetoothStateBroadcastReceiver
+    private lateinit var beaconBroadcastReceiver: BeaconBroadcastReceiver
 
     override fun onCreate() {
         super.onCreate()
         // BroadcastReceiverを登録
-        val bluetoothBroadcastReceiver = BluetoothStateBroadcastReceiver()
+        bluetoothBroadcastReceiver = BluetoothStateBroadcastReceiver()
         val bluetoothIntentFilter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION).apply {
             addAction(BluetoothAdapter.ACTION_STATE_CHANGED)
         }
         registerReceiver(bluetoothBroadcastReceiver, bluetoothIntentFilter)
 
-        val beaconBroadcastReceiver = BeaconBroadcastReceiver()
+        beaconBroadcastReceiver = BeaconBroadcastReceiver()
         val beaconIntentFilter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION).apply {
 //            addAction(Intent.ACTION_SCREEN_ON)
             addAction(Intent.ACTION_USER_PRESENT)
@@ -118,7 +120,25 @@ class BlePeripheralService: Service() {
     override fun onDestroy() {
         //Log.d("Service", "サービスが終了")
         //val peripheralManager = BlePeripheralServerManager(this)
-        peripheralServerManager.clear()
+        // --- ① BLE の停止 ---
+        try {
+            peripheralServerManager.clear()
+        } catch (e: Exception) {
+            Log.e("Service", "Failed to clear BLE peripheral", e)
+        }
+
+        // --- ② BroadcastReceiver の解除 ---
+        try {
+            unregisterReceiver(bluetoothBroadcastReceiver)
+        } catch (e: IllegalArgumentException) {
+            // 既に解除されている可能性あり → 無視
+        }
+
+        try {
+            unregisterReceiver(beaconBroadcastReceiver)
+        } catch (e: IllegalArgumentException) {
+            // 既に解除されている可能性あり → 無視
+        }
         super.onDestroy()
     }
 
@@ -170,8 +190,12 @@ class BlePeripheralService: Service() {
 //            }
             // SipHash
             val commonUtils = CommonUtils()
-//            val key = "2e60aa6ae7f8f6030e9ab0673e3e7510"    // ここをDBに保存されているやつに差し替える
-            val keyBytes = commonUtils.hexStringToByteArray(PRIVATE_KEY)
+            val privBeaconKey = peripheralServerManager.getPrivBeaconKey(db)
+            if(privBeaconKey == null){
+                // PrivBeaconKeyがない場合
+                return@launch
+            }
+            val keyBytes = commonUtils.hexStringToByteArray(privBeaconKey)
             val k0 = commonUtils.toLongLE(keyBytes, 0)
             val k1 = commonUtils.toLongLE(keyBytes, 8)
 //            val k0 = 0x03f6f8e76aaa602eL    // 鍵
@@ -233,7 +257,12 @@ class BlePeripheralService: Service() {
             delay(START_ADVERTISE_DELAY)
             // SipHash
             val commonUtils = CommonUtils()
-            val keyBytes = commonUtils.hexStringToByteArray(PRIVATE_KEY)
+            val privBeaconKey = peripheralServerManager.getPrivBeaconKey(db)
+            if(privBeaconKey == null){
+                // PrivBeaconKeyがない場合
+                return@launch
+            }
+            val keyBytes = commonUtils.hexStringToByteArray(privBeaconKey)
             val k0 = commonUtils.toLongLE(keyBytes, 0)
             val k1 = commonUtils.toLongLE(keyBytes, 8)
             val sip = SipHash24(k0, k1)
