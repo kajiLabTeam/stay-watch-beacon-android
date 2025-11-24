@@ -240,12 +240,6 @@ fun BeaconView (viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient
                     modifier = Modifier
                         .padding(bottom = 15.dp)
                 )
-                Text(
-                    text = viewModel.uuid,
-                    fontSize = 12.sp,
-                    modifier = Modifier
-                        .padding(bottom = 25.dp)
-                )
             }
             SyncButton(googleAuthUiClient = googleAuthClient, viewModel = viewModel, db = db, context = application, peripheralServiceManager = peripheralServerManager)
             Text(

@@ -326,23 +326,6 @@ class BeaconViewModel(): ViewModel() {
         val dao = db.userDao()
         Log.d("ViewModel", "アドバタイジングサービスをスタート")
 
-        // データベースからユーザ取得
-        val dbUser = dao.getUserById(1)
-
-        val dbUuid = dbUser.uuid
-        if(dbUuid == null){
-            Log.d("ViewModel", "データベースからUUIDの取得に失敗しました")
-            return statusCode.UNABLE_GET_USER_FROM_DATABASE
-        }
-
-        // uuidをUUIDの型に変換
-        val advertisingUuid = convertUuidFromString(dbUuid)
-        if(advertisingUuid == null){
-            Log.d("ViewModel", "UUIDの型変換に失敗しました")
-            isAdvertising = false
-            return statusCode.INVALID_UUID
-        }
-
         // アドバタイジング開始
         val intent = Intent(context, BlePeripheralService::class.java)
         context.stopService(intent)
@@ -350,7 +333,7 @@ class BeaconViewModel(): ViewModel() {
 
         // アドバタイジングの許可の有無をUIへ反映
         isAdvertising = true
-        // UUIDをデータベースへ保存
+        // アドバタイジングの許可の有無をデータベースへ保存
         dao.updateAdvertisingAllowance(true)
 
         return null
