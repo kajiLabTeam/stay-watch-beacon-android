@@ -75,15 +75,6 @@ class MainActivity : ComponentActivity() {
     private lateinit var bleManager: BluetoothManager
 
 
-    // firebase関連
-//    private lateinit var googleSignInClient: GoogleSignInClient
-//    //private lateinit var firebaseAuth: FirebaseAuth
-//    private val RC_SIGN_IN = 9001
-//    private val firebaseAuth: FirebaseAuth by lazy {
-//        FirebaseAuth.getInstance()
-//    }
-    //private var firebaseAuth: FirebaseAuth? = null
-
     // firebase関連例のYoutube
     private val googleAuthUiClient by lazy {
         GoogleAuthUiClient(
@@ -125,19 +116,6 @@ class MainActivity : ComponentActivity() {
             tmpIntent.data = Uri.parse("package:$packageName")
             startActivity(tmpIntent)
         }
-
-//        val locationPermission = Manifest.permission.BLUETOOTH_ADVERTISE// or ACCESS_COARSE_LOCATION
-//        val permissionDenied = ContextCompat.checkSelfPermission(this, locationPermission) == PackageManager.PERMISSION_DENIED
-//
-//        if (permissionDenied) {
-//            Toast.makeText(application, "位置情報の許可をください", Toast.LENGTH_SHORT).show()
-//            tmpIntent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-//            tmpIntent.data = Uri.fromParts("package", packageName, null)
-//            startActivity(tmpIntent)
-//        } else {
-//            // すでに位置情報の権限が許可されている場合の処理
-//        }
-
 
         // 要求する権限
         val permissions = arrayOf(

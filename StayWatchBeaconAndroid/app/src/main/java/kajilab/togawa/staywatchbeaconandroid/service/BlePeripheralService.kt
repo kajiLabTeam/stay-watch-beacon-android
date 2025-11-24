@@ -45,7 +45,6 @@ class BlePeripheralService: Service() {
         const val CHANNEL_TITLE = "滞在ウォッチ作動中"
         val statusCode = StatusCode
         const val START_ADVERTISE_DELAY:Long = 10000
-//        const val PRIVATE_KEY = "2e60aa6ae7f8f6030e9ab0673e3e7510"
     }
 
     private val peripheralServerManager = BlePeripheralServerManager(this)
@@ -68,7 +67,6 @@ class BlePeripheralService: Service() {
 
         beaconBroadcastReceiver = BeaconBroadcastReceiver()
         val beaconIntentFilter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION).apply {
-//            addAction(Intent.ACTION_SCREEN_ON)
             addAction(Intent.ACTION_USER_PRESENT)
             addAction(Intent.ACTION_LOCKED_BOOT_COMPLETED)
         }

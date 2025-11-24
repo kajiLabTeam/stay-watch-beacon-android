@@ -276,8 +276,6 @@ class BeaconViewModel(): ViewModel() {
         isAdvertising = true
 
         // ペリフェラルサービスを開始
-//        peripheralServiceManager.clear()
-//        peripheralServiceManager.startAdvertising(advertisingUuid)
         val intent = Intent(context, BlePeripheralService::class.java)
         context.stopService(intent)
         startForegroundService(context, intent)
@@ -349,9 +347,6 @@ class BeaconViewModel(): ViewModel() {
         val intent = Intent(context, BlePeripheralService::class.java)
         context.stopService(intent)
         startForegroundService(context, intent)
-
-//        peripheralServiceManager.clear()
-//        peripheralServiceManager.startAdvertising(advertisingUuid)
 
         // アドバタイジングの許可の有無をUIへ反映
         isAdvertising = true
