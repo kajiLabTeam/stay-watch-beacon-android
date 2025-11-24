@@ -11,6 +11,7 @@ data class DBUser(
     @ColumnInfo(name = "uuid") val uuid: String?,
     @ColumnInfo(name = "email") val email: String?,
     @ColumnInfo(name = "community_name") val communityName: String?,
+    @ColumnInfo(name = "privbeacon_key") val privbeaconKey: String?,
     @ColumnInfo(name = "latest_sync_time") val latestSyncTime: String?,
     @ColumnInfo(name = "is_allowed_advertising") val isAllowedAdvertising: Boolean?
 )
