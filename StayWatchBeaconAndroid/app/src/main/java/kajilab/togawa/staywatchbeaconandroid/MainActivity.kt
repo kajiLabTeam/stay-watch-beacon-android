@@ -27,19 +27,32 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.room.Room
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -58,6 +71,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import pub.devrel.easypermissions.EasyPermissions
+import java.io.File
 
 
 class MainActivity : ComponentActivity() {
@@ -189,6 +203,25 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                 }
+                // ============ 評価実験用のCSVファイル共有ボタン =================
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(bottom = 64.dp),
+                    verticalArrangement = Arrangement.Bottom,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Button(
+                        onClick = { uploadCSV() },
+                        colors = ButtonDefaults.buttonColors(Color(0xFFF8CC45)),
+                        modifier = Modifier
+                            .defaultMinSize(minWidth = 1.dp, minHeight = 1.dp)
+                            .size(width = 300.dp, height = 40.dp)
+                    ) {
+                        Text("評価実験用データ共有", color = Color.Black, fontSize = 16.sp)
+                    }
+                }
+                // ==============================================================
             }
         }
     }
@@ -196,5 +229,25 @@ class MainActivity : ComponentActivity() {
     override fun onDestroy() {
         super.onDestroy()
         unregisterReceiver(br)
+    }
+
+    fun uploadCSV(){
+        Log.d("TEST", "ボタン押したよ")
+        val fileName = "onScreenTimeStamp.csv"
+        val csvText = openFileInput(fileName).bufferedReader().readText()
+        Log.d("saveJsonTimeStamp", "CSVは")
+        Log.d("saveJsonTimeStamp", csvText)
+        val file = File(filesDir, fileName)
+        val uri = FileProvider.getUriForFile(application, "${application.packageName}.provider", file)
+        val sendIntent: Intent = Intent(Intent.ACTION_SEND).apply {
+            type = "application/csv"
+            putExtra(Intent.EXTRA_STREAM, uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        val shareIntent = Intent.createChooser(sendIntent, null)
+        startActivity(
+            Intent.createChooser(shareIntent, null)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        )
     }
 }

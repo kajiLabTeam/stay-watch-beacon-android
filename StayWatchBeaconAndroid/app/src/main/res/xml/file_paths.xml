@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Internal Storage (filesDir) -->
+    <files-path
+        name="internal_files"
+        path="." />
+
+    <!-- Cache Storage (cacheDir) -->
+    <cache-path
+        name="internal_cache"
+        path="." />
+</paths>

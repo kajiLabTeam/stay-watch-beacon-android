@@ -8,6 +8,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.bluetooth.BluetoothAdapter
 import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.ConnectivityManager
@@ -36,6 +37,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.security.SecureRandom
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 class BlePeripheralService: Service() {
@@ -211,6 +215,8 @@ class BlePeripheralService: Service() {
     // 画面ロックを解除した際に実行
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     private fun handleOnScreen() {
+
+        saveCSVTimeStamp(application)
 //        Log.d("Service", "Screen ON")
         CoroutineScope(Dispatchers.IO).launch {
             val db = Room.databaseBuilder(
@@ -339,4 +345,20 @@ class BlePeripheralService: Service() {
         return msdString
     }
 
+    fun saveCSVTimeStamp(context: Context) {
+        val now = System.currentTimeMillis()
+        val formatedCurrent = Instant.ofEpochMilli(now)
+            .atZone(ZoneId.of("Asia/Tokyo"))
+            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+        Log.d("saveJsonTimeStamp", formatedCurrent)
+
+        // ファイルに書き込み
+        val fileName = "onScreenTimeStamp.csv"
+        context.openFileOutput(fileName, Context.MODE_APPEND).use { fos ->
+            fos.write((formatedCurrent + "\n").toByteArray())
+        }
+//        val csvText = context.openFileInput(fileName).bufferedReader().readText()
+//        Log.d("saveJsonTimeStamp", "CSVは")
+//        Log.d("saveJsonTimeStamp", csvText)
+    }
 }

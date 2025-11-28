@@ -33,6 +33,20 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
 
+        <!-- 評価実験用ファイル共有に必要 -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="kajilab.togawa.staywatchbeaconandroid.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
+        <!-- ↑評価実験用ファイル共有に必要 -->
+
         <receiver
             android:name=".broadcast.BeaconBroadcastReceiver"
             android:directBootAware="true"
