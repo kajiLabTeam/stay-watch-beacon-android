@@ -63,8 +63,6 @@ class BlePeripheralServerManager(private val context: Context) : BleServerManage
     )
     val gattService = service(serviceUUID, readCharacteristic, writeCharacteristic, notifyCharacteristic)
 
-    private val connectionObserver = object: BaseConnectionObserver {}
-    private val bondingObserver = object: BaseBondingObserver {}
     private val serverObserver = object: ServerObserver {
         override fun onDeviceConnectedToServer(device: BluetoothDevice) {
             //"Not yet implemented"
@@ -157,38 +155,6 @@ class BlePeripheralServerManager(private val context: Context) : BleServerManage
         }
         val privBeaconKey = dbUser.privbeaconKey
         return privBeaconKey
-    }
-
-    // 8ebc21144abdba0db7c6ff0a0020002b: String -> 8ebc2114-4abd-ba0d-b7c6-ff0a0020002b: String
-    private fun formatUuidString(strUuid: String): String {
-        val formattedStr = buildString {
-            append(strUuid.substring(0,8))
-            append("-")
-            append(strUuid.substring(8,12))
-            append("-")
-            append(strUuid.substring(12,16))
-            append("-")
-            append(strUuid.substring(16,20))
-            append("-")
-            append(strUuid.substring(20))
-        }
-        Log.d("ViewModel", "formattedUuid:$formattedStr")
-        return formattedStr
-    }
-
-    // 8ebc2114-4abd-ba0d-b7c6-ff0a0020002b: String -> 8ebc2114-4abd-ba0d-b7c6-ff0a0020002b: UUID
-    private fun convertUuidFromString(strUuid: String): UUID? {
-        Log.d("ViewModel", "formatに出すUUID $strUuid")
-        val formattedStr = formatUuidString(strUuid)
-        //val formattedStr = "8ebc2114-4abd-ba0d-b7c6-ff0a0020002b"
-        var resultUuid: UUID? = null
-        try{
-            resultUuid = UUID.fromString(formattedStr)
-            Log.d("ViewModel", "uuid: $resultUuid")
-        } catch(e: Exception){
-            return null
-        }
-        return resultUuid
     }
 
     fun clear() {
