@@ -30,6 +30,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -184,23 +185,28 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    //Greeting("Android")
-                    if (viewModel.email == null) {
-                        SignInView(
-                            viewModel,
-                            googleAuthUiClient,
-                            db,
-                            application,
-                            peripheralServiceManager
-                        )
-                    } else {
-                        BeaconView(
-                            viewModel,
-                            googleAuthUiClient,
-                            peripheralServiceManager,
-                            application,
-                            db
-                        )
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                    ) {
+                        Spacer(modifier = Modifier.padding(top = 48.dp))
+                        if (viewModel.email == null) {
+                            SignInView(
+                                viewModel,
+                                googleAuthUiClient,
+                                db,
+                                application,
+                                peripheralServiceManager
+                            )
+                        } else {
+                            BeaconView(
+                                viewModel,
+                                googleAuthUiClient,
+                                peripheralServiceManager,
+                                application,
+                                db
+                            )
+                        }
                     }
                 }
                 // ============ 評価実験用のCSVファイル共有ボタン =================

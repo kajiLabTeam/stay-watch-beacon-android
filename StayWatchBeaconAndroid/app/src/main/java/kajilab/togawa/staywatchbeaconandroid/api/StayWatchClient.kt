@@ -208,7 +208,6 @@ class StayWatchClient {
                 StayWatchServerResult(
                     data = StayWatchUser(
                         userName = responseUser.name,
-                        uuid = responseUser.uuid,
                         communityName = responseUser.communityName,
                         privbeaconKey = privbeaconKey
                     ),

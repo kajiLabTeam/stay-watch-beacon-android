@@ -8,7 +8,6 @@ data class StayWatchServerResult (
 
 data class StayWatchUser(
     val userName: String,
-    val uuid: String,
     val communityName: String,
     val privbeaconKey: String
 )

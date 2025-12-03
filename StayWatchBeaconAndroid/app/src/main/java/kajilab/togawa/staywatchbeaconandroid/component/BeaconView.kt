@@ -124,7 +124,7 @@ fun BeaconView (viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             // メールアドレスが滞在ウォッチサーバーに登録されていない場合
-            if(viewModel.uuid == ""){
+            if(viewModel.userName == ""){
                 // 発信中・停止中の四角
                 AdvertiseStatusPanel(
                     textStr = "未登録",
@@ -146,23 +146,6 @@ fun BeaconView (viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient
                         .padding(bottom = 15.dp)
                 )
 
-            }
-            else if(!viewModel.isAndroidBeaconUUID(viewModel.uuid)){
-                // Androidビーコンとして登録されていない場合
-                // 発信中・停止中の四角
-                AdvertiseStatusPanel(
-                    textStr = "未登録",
-                    panelColor = Color.Transparent,
-                    textColor = Color.Red,
-                    borderColor = Color.Red
-                )
-                // ユーザ名や同期ボタン、同期時刻
-                Text(
-                    text = "Androidビーコンとして登録されていません",
-                    fontSize = 16.sp,
-                    modifier = Modifier
-                        .padding(bottom = 15.dp)
-                )
             }
             else if(ActivityCompat.checkSelfPermission(application, Manifest.permission.BLUETOOTH_ADVERTISE) != PackageManager.PERMISSION_GRANTED){
                 // 「付近のデバイス」権限が許可されていない場合
@@ -252,7 +235,7 @@ fun BeaconView (viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient
         }
 
         // 発信開始停止ボタン
-        if(viewModel.uuid != "" && viewModel.isAndroidBeaconUUID(viewModel.uuid) && ActivityCompat.checkSelfPermission(application, Manifest.permission.BLUETOOTH_ADVERTISE) == PackageManager.PERMISSION_GRANTED){
+        if(ActivityCompat.checkSelfPermission(application, Manifest.permission.BLUETOOTH_ADVERTISE) == PackageManager.PERMISSION_GRANTED){
             if(viewModel.isAdvertising){
                 Button(
                     onClick = {

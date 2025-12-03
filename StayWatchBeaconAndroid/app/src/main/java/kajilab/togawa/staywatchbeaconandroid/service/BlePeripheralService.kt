@@ -73,6 +73,7 @@ class BlePeripheralService: Service() {
         val beaconIntentFilter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION).apply {
             addAction(Intent.ACTION_USER_PRESENT)
             addAction(Intent.ACTION_LOCKED_BOOT_COMPLETED)
+            addAction(Intent.ACTION_DATE_CHANGED)
         }
         registerReceiver(beaconBroadcastReceiver, beaconIntentFilter)
     }
@@ -92,8 +93,12 @@ class BlePeripheralService: Service() {
         }
 
         when(intent.action){
+            Intent.ACTION_DATE_CHANGED -> {
+//                Log.d("ServiceBroadcast", "日付が変わったよ")
+                handleOnScreen()
+            }
             Intent.ACTION_USER_PRESENT -> {
-            // Log.d("ServiceBroadcast", "がめんろっくかいじょされたよおおおお")
+//             Log.d("ServiceBroadcast", "がめんろっくかいじょされたよおおおお")
                 peripheralServerManager.clear()
                 handleOnScreen()
             }
@@ -345,6 +350,7 @@ class BlePeripheralService: Service() {
         return msdString
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun saveCSVTimeStamp(context: Context) {
         val now = System.currentTimeMillis()
         val formatedCurrent = Instant.ofEpochMilli(now)

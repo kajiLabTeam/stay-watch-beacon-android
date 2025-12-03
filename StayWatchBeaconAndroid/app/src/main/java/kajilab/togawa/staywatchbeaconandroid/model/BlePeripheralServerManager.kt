@@ -1,6 +1,5 @@
 package kajilab.togawa.staywatchbeaconandroid.model
 
-//import asia.groovelab.blesample.extension.asHexByteArray
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
@@ -11,13 +10,10 @@ import android.bluetooth.le.AdvertiseSettings
 import android.bluetooth.le.BluetoothLeAdvertiser
 import android.content.Context
 import android.content.pm.PackageManager
-import android.os.ParcelUuid
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import kajilab.togawa.staywatchbeaconandroid.db.AppDatabase
 import kajilab.togawa.staywatchbeaconandroid.db.DBUser
-import kajilab.togawa.staywatchbeaconandroid.observer.BaseBondingObserver
-import kajilab.togawa.staywatchbeaconandroid.observer.BaseConnectionObserver
 import kajilab.togawa.staywatchbeaconandroid.utils.StatusCode
 import no.nordicsemi.android.ble.BleServerManager
 import no.nordicsemi.android.ble.observer.ServerObserver

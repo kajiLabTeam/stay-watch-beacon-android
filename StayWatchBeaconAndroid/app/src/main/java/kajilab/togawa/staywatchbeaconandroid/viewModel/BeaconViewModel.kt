@@ -58,7 +58,6 @@ class BeaconViewModel(): ViewModel() {
     private val statusCode = StatusCode
 
     var userName by mutableStateOf("")
-    var uuid by mutableStateOf("")
     var email: String? by mutableStateOf(null)
     var communityName by mutableStateOf("")
     var latestSyncTime by mutableStateOf("")
@@ -79,15 +78,15 @@ class BeaconViewModel(): ViewModel() {
             return
         }
 
-        if(user.name == null || user.uuid == null || user.communityName == null || user.latestSyncTime == null || user.isAllowedAdvertising == null){
+        if(user.name == null || user.communityName == null || user.latestSyncTime == null || user.isAllowedAdvertising == null){
             // サーバに登録されていないユーザでサインインしている状態のときはemailだけ入れる
+            Log.d("StartViewModel", "サーバに登録されていないユーザです")
             email = user.email
             latestSyncTime = user.latestSyncTime!!
             return
         }
         Log.d("StartViewModel", "$user")
         userName = user.name
-        uuid = user.uuid
         email = user.email
         communityName = user.communityName
         latestSyncTime = user.latestSyncTime
@@ -229,7 +228,7 @@ class BeaconViewModel(): ViewModel() {
         dao.createUser(DBUser(
             id = 1,
             name = user.data?.userName,
-            uuid = user.data?.uuid,
+            uuid = null,
             email = gmail,
             privbeaconKey = user.data?.privbeaconKey,
             communityName = user.data?.communityName,
@@ -242,36 +241,14 @@ class BeaconViewModel(): ViewModel() {
         if(user.data == null){
             // ユーザ情報がバックエンドにない場合(削除されたユーザの場合)
             userName = ""
-            uuid = ""
             communityName = ""
             peripheralServiceManager.clear()
             isAdvertising = false
             return null
         }
         // ＝ユーザ情報がバックエンドに登録されている場合の処理＝
-        // Androidビーコンと登録されているかチェック
-        if(!isAndroidBeaconUUID(user.data.uuid)){
-            Log.d("ViewModel", "Androidビーコンとして登録されていません")
-            peripheralServiceManager.clear()
-            // UIへ反映
-            userName = user.data.userName
-            uuid = user.data.uuid
-            communityName = user.data.communityName
-            isAdvertising = false
-            return null
-        }
-        // UUIDをStringからUUIDの型へ変換
-        val advertisingUuid = convertUuidFromString(user.data.uuid)
-        if(advertisingUuid == null){
-            Log.d("ViewModel", "UUIDの型変換に失敗しました")
-            peripheralServiceManager.clear()
-            isAdvertising = false
-            return null
-        }
-
         // UIへ反映
         userName = user.data.userName
-        uuid = user.data.uuid
         communityName = user.data.communityName
         isAdvertising = true
 
@@ -279,7 +256,6 @@ class BeaconViewModel(): ViewModel() {
         val intent = Intent(context, BlePeripheralService::class.java)
         context.stopService(intent)
         startForegroundService(context, intent)
-        Log.d("ViewModel", "${advertisingUuid}をアドバタイズするよ")
 
         dao.updateAdvertisingAllowance(true)
 
@@ -296,7 +272,6 @@ class BeaconViewModel(): ViewModel() {
         // UI部分の変更を反映
         email = null
         userName = ""
-        uuid = ""
         communityName = ""
         latestSyncTime = ""
         isAdvertising = false

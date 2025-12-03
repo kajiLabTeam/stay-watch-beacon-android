@@ -41,7 +41,7 @@ fun SignInView(viewModel: BeaconViewModel, googleAuthClient: GoogleAuthUiClient,
             )
             {
                 Text(
-                    text = "滞在ウォッチ用ビーコン",
+                    text = "滞在ウォッチ用PrivBeacon",
                     fontSize = 25.sp,
                     modifier = Modifier
                         .padding(bottom = 10.dp)

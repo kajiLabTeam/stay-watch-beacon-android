@@ -41,6 +41,15 @@ class BeaconBroadcastReceiver: BroadcastReceiver() {
                 startForegroundService(application, targetIntent)
             }
 
+            Intent.ACTION_DATE_CHANGED -> {
+                Log.d("Broadcast", "日付変更を検知")
+                val bleIntent = Intent(application, BlePeripheralService::class.java)
+                val targetIntent = bleIntent.apply {
+                    action = Intent.ACTION_DATE_CHANGED
+                }
+                startForegroundService(application, targetIntent)
+            }
+
 //            Intent.ACTION_AIRPLANE_MODE_CHANGED -> {
 //                val bleIntent = Intent(application, BlePeripheralService::class.java)
 //                val isAirplaneModeOn = intent.getBooleanExtra("state", false)
