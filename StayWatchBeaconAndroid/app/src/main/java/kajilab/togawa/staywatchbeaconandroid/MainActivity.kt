@@ -209,25 +209,6 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 }
-                // ============ 評価実験用のCSVファイル共有ボタン =================
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(bottom = 64.dp),
-                    verticalArrangement = Arrangement.Bottom,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Button(
-                        onClick = { uploadCSV() },
-                        colors = ButtonDefaults.buttonColors(Color(0xFFF8CC45)),
-                        modifier = Modifier
-                            .defaultMinSize(minWidth = 1.dp, minHeight = 1.dp)
-                            .size(width = 300.dp, height = 40.dp)
-                    ) {
-                        Text("評価実験用データ共有", color = Color.Black, fontSize = 16.sp)
-                    }
-                }
-                // ==============================================================
             }
         }
     }

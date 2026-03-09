@@ -4,9 +4,12 @@ import java.security.SecureRandom
 
 class CommonUtils {
     fun hexStringToByteArray(data: String): ByteArray {
-        val result = ByteArray(data.length / 2)
-        for (i in data.indices step 2) {
-            val byte = data.substring(i, i + 2).toInt(16).toByte()
+        // 文字数が奇数なら先頭に"0"を追加
+        val normalized = if (data.length % 2 != 0) "0$data" else data
+
+        val result = ByteArray(normalized.length / 2)
+        for (i in normalized.indices step 2) {
+            val byte = normalized.substring(i, i + 2).toInt(16).toByte()
             result[i / 2] = byte
         }
         return result

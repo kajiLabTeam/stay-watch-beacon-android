@@ -12,7 +12,7 @@ class EncryptedSharePreferencesManager(context: Context) {
 
     // EncryptedSharedPreferencesのインスタンスを初期化
     private val sharedPreferences = EncryptedSharedPreferences.create(
-        "SecureContentAuth",
+        "SecureContentAuthVerDebug2",    // アプリを更新するたびに変えた方がよい
         masterKeyAlias,
         context,
         EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,

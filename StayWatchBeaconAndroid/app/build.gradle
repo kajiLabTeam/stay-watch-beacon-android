@@ -14,8 +14,8 @@ android {
         applicationId "kajilab.togawa.staywatchbeaconandroid"
         minSdk 24
         targetSdk 36
-        versionCode 9
-        versionName "1.1.beta5"
+        versionCode 12
+        versionName "1.1.beta12"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -88,9 +88,6 @@ dependencies {
 
     // Jsonを変換する関連
     implementation 'com.google.code.gson:gson:2.13.2'
-
-    // BLE関連
-    implementation 'org.altbeacon:android-beacon-library:2+'
 
     implementation 'no.nordicsemi.android:ble:2.11.0'
 

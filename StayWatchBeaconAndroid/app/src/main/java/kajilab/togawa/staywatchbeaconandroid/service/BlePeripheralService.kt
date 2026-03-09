@@ -48,7 +48,7 @@ class BlePeripheralService: Service() {
         const val CHANNEL_ID = "stw344"
         const val CHANNEL_TITLE = "滞在ウォッチ作動中"
         val statusCode = StatusCode
-        const val START_ADVERTISE_DELAY:Long = 10000
+        const val START_ADVERTISE_DELAY:Long = 500
     }
 
     private val peripheralServerManager = BlePeripheralServerManager(this)
@@ -220,8 +220,7 @@ class BlePeripheralService: Service() {
     // 画面ロックを解除した際に実行
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     private fun handleOnScreen() {
-
-        saveCSVTimeStamp(application)
+        
 //        Log.d("Service", "Screen ON")
         CoroutineScope(Dispatchers.IO).launch {
             val db = Room.databaseBuilder(
