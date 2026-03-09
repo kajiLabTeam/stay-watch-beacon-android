@@ -32,7 +32,6 @@ import kajilab.togawa.staywatchbeaconandroid.model.BlePeripheralServerManager
 import kajilab.togawa.staywatchbeaconandroid.model.SignInResult
 import kajilab.togawa.staywatchbeaconandroid.service.BlePeripheralService
 import kajilab.togawa.staywatchbeaconandroid.state.SignInState
-import kajilab.togawa.staywatchbeaconandroid.useCase.EncryptedSharePreferencesManager
 import kajilab.togawa.staywatchbeaconandroid.useCase.ServiceState
 import kajilab.togawa.staywatchbeaconandroid.utils.StatusCode
 import kotlinx.coroutines.CoroutineScope
@@ -123,18 +122,10 @@ class BeaconViewModel(): ViewModel() {
      * 返す値：400 or 410 or 450 or null
      */
     suspend fun signInUser(gmail:String?, token:String, db:AppDatabase, context:Context, peripheralServiceManager: BlePeripheralServerManager): Number?{
-        val encryptedSharedPreferencesManager = EncryptedSharePreferencesManager(context)
 
-        Log.d("ViewModel", "トークンとメールアドレス保存するぞう")
+        Log.d("ViewModel", "メールアドレス保存するぞう")
         Log.d("ViewModel", "$gmail")
-        Log.d("ViewModel", token)
-
-        // トークンを保存
-        var error = encryptedSharedPreferencesManager.storeString("TOKEN", token)
-        if(error != null){
-            Log.d("ViewModel", "トークンの保存に失敗しました")
-            // 失敗しても処理は続行してもよいためreturnはなし
-        }
+//        Log.d("ViewModel", token)
 
         // ここから合併できそう
         val errorCode = storeUserAndStartService(context, db, peripheralServiceManager, token, gmail)
@@ -155,30 +146,32 @@ class BeaconViewModel(): ViewModel() {
      * 同期ボタン
      * 返す値：400 or 410 or 430 or 450 or null
      */
-    suspend fun syncUser(db:AppDatabase, context: Context, peripheralServiceManager: BlePeripheralServerManager): Number?{
-        val dao = db.userDao()
-        val encryptedSharePreferencesManager = EncryptedSharePreferencesManager(context)
-
-        // トークンの取得
-        val (token, error) = encryptedSharePreferencesManager.getString("TOKEN")
-        if(error != null){
-            Log.d("ViewModel", "端末からトークンを取得するのに失敗しました")
-            return statusCode.UNABLE_GET_TOKEN_FROM_DEVICE
-        }
-        Log.d("ViewModel", "GoogleIDトークン：$token")
-
-        // gmailの取得
-        val currentUser = dao.getUserById(1)
-        val gmail = currentUser.email
-
-        val errorCode = storeUserAndStartService(context, db, peripheralServiceManager, token, gmail)
-        if(errorCode != null){
-            Log.d("ViewModel", "サービス開始できませんでした")
-            return errorCode
-        }
-
-        return null
-    }
+//    suspend fun syncUser(db:AppDatabase, context: Context, peripheralServiceManager: BlePeripheralServerManager): Number?{
+//        Log.d("ViewModel", "syncUser開始")
+//
+//        val dao = db.userDao()
+//        val encryptedSharePreferencesManager = EncryptedSharePreferencesManager(context)
+//
+//        // トークンの取得
+//        val (token, error) = encryptedSharePreferencesManager.getString("TOKEN")
+//        if(error != null){
+//            Log.d("ViewModel", "端末からトークンを取得するのに失敗しました")
+//            return statusCode.UNABLE_GET_TOKEN_FROM_DEVICE
+//        }
+//        Log.d("ViewModel", "GoogleIDトークン：$token")
+//
+//        // gmailの取得
+//        val currentUser = dao.getUserById(1)
+//        val gmail = currentUser.email
+//
+//        val errorCode = storeUserAndStartService(context, db, peripheralServiceManager, token, gmail)
+//        if(errorCode != null){
+//            Log.d("ViewModel", "サービス開始できませんでした")
+//            return errorCode
+//        }
+//
+//        return null
+//    }
 
     /**
      * 返す値：400 or 410 or 450 or Null
@@ -264,7 +257,6 @@ class BeaconViewModel(): ViewModel() {
 
     suspend fun signOut(db:AppDatabase, context:Context, peripheralServiceManager: BlePeripheralServerManager){
         val dao = db.userDao()
-        val encryptedSharedPreferencesManager = EncryptedSharePreferencesManager(context)
 
         // データベースからユーザ情報の削除
         dao.deleteUserById(1)
@@ -283,13 +275,6 @@ class BeaconViewModel(): ViewModel() {
         context.stopService(intent)
         dao.updateAdvertisingAllowance(true)
 
-
-        // 保存されているトークンを削除
-        var error = encryptedSharedPreferencesManager.deleteString("TOKEN")
-        if(error != null){
-            Log.d("ViewModel", "トークンの削除に失敗しました")
-            return
-        }
 
     }
 

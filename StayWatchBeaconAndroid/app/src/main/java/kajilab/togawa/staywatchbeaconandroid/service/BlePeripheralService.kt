@@ -220,7 +220,7 @@ class BlePeripheralService: Service() {
     // 画面ロックを解除した際に実行
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     private fun handleOnScreen() {
-        
+
 //        Log.d("Service", "Screen ON")
         CoroutineScope(Dispatchers.IO).launch {
             val db = Room.databaseBuilder(
